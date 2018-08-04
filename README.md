@@ -1,4 +1,4 @@
-# Penstock
+# Penstock [![Build Status](https://travis-ci.com/woodenmill/penstock.svg?branch=master)](https://travis-ci.com/woodenmill/penstock)
 
 According to [Wikipedia](https://en.wikipedia.org/wiki/Penstock):
 
