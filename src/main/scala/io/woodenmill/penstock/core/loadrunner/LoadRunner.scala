@@ -1,24 +1,30 @@
 package io.woodenmill.penstock.core.loadrunner
 
-import scala.concurrent.duration.FiniteDuration
+import akka.Done
+import akka.stream._
+import akka.stream.scaladsl._
+
+import scala.concurrent._
+import scala.concurrent.duration._
+
 
 object LoadRunner {
-  def apply[T](toSend: T, duration: FiniteDuration): LoadRunner[T] = LoadRunner(Seq(toSend), duration)
+  def apply[T](toSend: T, duration: FiniteDuration, throughput: Int): LoadRunner[T] = LoadRunner(Seq(toSend), duration, throughput)
 }
 
-case class LoadRunner[T](toSend: Seq[T], duration: FiniteDuration) {
+case class LoadRunner[T](toSend: Seq[T], duration: FiniteDuration, throughput: Int) {
 
-  def run()(implicit backend: StreamingBackend[T], clock: Clock = SystemClock()): Unit = {
-    runFor(duration, clock) { () =>
-      toSend.foreach(backend.send)
-    }
-  }
+  def run()(implicit backend: StreamingBackend[T], mat: ActorMaterializer): Future[Done] = {
 
-  private def runFor(duration: FiniteDuration, clock: Clock)(f: () => Unit): Unit = {
-    val startTime = clock.currentTime()
-    while (duration.toMillis > (clock.currentTime() - startTime)) {
-      f()
-    }
+    val (killSwitch, loadRunnerFinishedFuture) = Source.cycle[T](() => toSend.iterator)
+      .throttle(throughput, per = 1.second)
+      .viaMat(KillSwitches.single)(Keep.right)
+      .toMat(Sink.foreach(backend.send))(Keep.both)
+      .run()(mat)
+
+    mat.system.scheduler.scheduleOnce(duration)(killSwitch.shutdown())(mat.executionContext)
+
+    loadRunnerFinishedFuture
   }
 
 }
