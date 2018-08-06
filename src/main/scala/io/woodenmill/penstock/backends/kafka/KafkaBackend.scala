@@ -2,7 +2,7 @@ package io.woodenmill.penstock.backends.kafka
 
 import java.util.concurrent.TimeUnit.SECONDS
 
-import io.woodenmill.penstock.core.loadrunner.StreamingBackend
+import io.woodenmill.penstock.backends.StreamingBackend
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.ByteArraySerializer
 

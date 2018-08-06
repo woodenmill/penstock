@@ -1,6 +1,5 @@
 package io.woodenmill.penstock.backends
 
-import io.woodenmill.penstock.core.loadrunner.StreamingBackend
 
 import scala.collection.mutable
 import scala.concurrent.Future

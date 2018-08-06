@@ -1,4 +1,4 @@
-package io.woodenmill.penstock.core.loadrunner
+package io.woodenmill.penstock.backends
 
 trait StreamingBackend[T] {
   def send(msg: T): Unit
