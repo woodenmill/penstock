@@ -1,11 +1,11 @@
 # Penstock [![Build Status](https://travis-ci.com/woodenmill/penstock.svg?branch=master)](https://travis-ci.com/woodenmill/penstock)
 
-Penstock is a set of building blocks that transforms your favourite testing framework into powerful load test tool.
+Penstock (/ˈpɛnstɒk/) is a set of building blocks that transforms your favourite testing framework into powerful load test tool for streaming applications.
 
-
-According to [Wikipedia](https://en.wikipedia.org/wiki/Penstock):
 
 > A penstock (fr. conduite forcée) is a sluice or gate or intake structure that controls water flow, or an enclosed pipe that delivers water to hydro turbines and sewerage systems. The term is inherited from the earlier technology of mill ponds and watermills.
+>
+> &mdash; [Wikipedia](https://en.wikipedia.org/wiki/Penstock)
 
 ## Concept
 
