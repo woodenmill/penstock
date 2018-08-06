@@ -1,8 +1,9 @@
-package io.woodenmill.penstock.core.loadrunner
+package io.woodenmill.penstock
 
 import akka.Done
 import akka.stream._
 import akka.stream.scaladsl._
+import io.woodenmill.penstock.backends.StreamingBackend
 
 import scala.concurrent._
 import scala.concurrent.duration._

@@ -1,9 +1,8 @@
-package io.woodenmill.penstock.backends
+package io.woodenmill.penstock.backends.kafka
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import io.woodenmill.penstock.backends.kafka.KafkaBackend
-import io.woodenmill.penstock.core.loadrunner.LoadRunner
+import io.woodenmill.penstock.LoadRunner
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer

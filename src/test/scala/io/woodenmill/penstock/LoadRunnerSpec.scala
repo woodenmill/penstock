@@ -1,9 +1,8 @@
-package io.woodenmill.penstock.core
+package io.woodenmill.penstock
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import io.woodenmill.penstock.backends.TestBackends._
-import io.woodenmill.penstock.core.loadrunner.LoadRunner
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 

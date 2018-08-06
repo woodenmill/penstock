@@ -1,11 +1,10 @@
-package io.woodenmill.penstock.core
+package io.woodenmill.penstock
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.testkit.ExplicitlyTriggeredScheduler
 import com.typesafe.config.{Config, ConfigFactory}
-import io.woodenmill.penstock.backends.TestBackends
-import io.woodenmill.penstock.core.loadrunner.{LoadRunner, StreamingBackend}
+import io.woodenmill.penstock.backends.{StreamingBackend, TestBackends}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
