@@ -8,16 +8,21 @@ import org.apache.kafka.common.serialization.ByteArraySerializer
 
 import scala.collection.JavaConverters._
 
+object KafkaBackend {
+  val producerClientId = "penstock-producer"
+}
 
 case class KafkaBackend(bootstrapServers: String) extends StreamingBackend[ProducerRecord[Array[Byte], Array[Byte]]] {
-  private val config: Map[String, AnyRef] = Map( ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> bootstrapServers )
+  private val config: Map[String, AnyRef] = Map(
+    ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> bootstrapServers,
+    ProducerConfig.CLIENT_ID_CONFIG -> KafkaBackend.producerClientId
+  )
   private val bytesSerializer = new ByteArraySerializer
   private val producer = new KafkaProducer[Array[Byte], Array[Byte]](config.asJava, bytesSerializer, bytesSerializer)
 
-  override def send(msg: ProducerRecord[Array[Byte], Array[Byte]]): Unit = {
-    producer.send(msg)
-  }
+  override def send(msg: ProducerRecord[Array[Byte], Array[Byte]]): Unit = producer.send(msg)
 
   def shutdown(): Unit = producer.close(5, SECONDS)
 
+  def metrics(): KafkaMetrics = KafkaMetrics(producer.metrics().asScala.toMap)
 }

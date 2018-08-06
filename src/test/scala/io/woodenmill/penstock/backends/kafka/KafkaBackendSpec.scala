@@ -6,12 +6,12 @@ import io.woodenmill.penstock.LoadRunner
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.concurrent.duration._
 
-class KafkaBackendSpec extends FlatSpec with Matchers with EmbeddedKafka with BeforeAndAfterAll with ScalaFutures {
+class KafkaBackendSpec extends FlatSpec with Matchers with EmbeddedKafka with BeforeAndAfterAll with ScalaFutures with Eventually {
 
   val topic = "input"
   val kafkaPort = 6001
@@ -54,6 +54,23 @@ class KafkaBackendSpec extends FlatSpec with Matchers with EmbeddedKafka with Be
     //then
     whenReady(runnerFinished) { _ =>
       consumeFirstStringMessageFrom(topic) shouldBe "from-runner"
+    }
+  }
+
+  it should "expose basic Kafka Producer metrics" in {
+    //given
+    val backend = KafkaBackend(s"localhost:$kafkaPort")
+    val someMessage = new ProducerRecord[Array[Byte], Array[Byte]](topic, "some message".getBytes)
+
+    //when
+    backend.send(someMessage)
+    backend.send(someMessage)
+
+    //then
+    eventually {
+      val metrics = backend.metrics()
+      metrics.recordSendTotal.value shouldBe 2
+      metrics.recordErrorTotal.value shouldBe 0
     }
   }
 
