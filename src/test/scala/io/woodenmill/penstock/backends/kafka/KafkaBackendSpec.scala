@@ -74,4 +74,12 @@ class KafkaBackendSpec extends FlatSpec with Matchers with EmbeddedKafka with Be
     }
   }
 
+  it should "expose metrics before any message is sent" in {
+    //when
+    val backend = KafkaBackend(s"localhost:$kafkaPort")
+
+    //then
+    backend.metrics().recordSendTotal.value shouldBe 0
+  }
+
 }
