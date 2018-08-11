@@ -84,6 +84,17 @@ package io.woodenmill.penstock.testutils
          |}
     """.stripMargin
 
+    val resultIsNotAnArray: String =
+      s"""
+         |{
+         | "status": "success",
+         | "data": {
+         |   "resultType": "vector",
+         |   "result": "what the hell Prometheus?"
+         | }
+         |}
+    """.stripMargin
+
     def multipleMetricsResponse(): String =
       s"""
          |{

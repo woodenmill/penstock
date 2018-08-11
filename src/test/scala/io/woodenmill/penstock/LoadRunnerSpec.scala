@@ -8,7 +8,6 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 class LoadRunnerSpec extends FlatSpec with Matchers with BeforeAndAfterAll with ScalaFutures {
   val actorSystem: ActorSystem = ActorSystem("LoadRunnerSpec")

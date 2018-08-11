@@ -22,9 +22,9 @@ trait PrometheusIntegratedSpec extends BeforeAndAfterAll with BeforeAndAfter { t
 
   override protected def afterAll(): Unit = wireMockServer.stop()
 
-  def configurePromStub(query: String, promResponse: String): Unit = {
+  def configurePromStub(query: String, promResponse: String, status: Int = 200): Unit = {
     stubFor(get(urlPathEqualTo("/api/v1/query")).withQueryParam("query", equalTo(query))
-      .willReturn(aResponse.withStatus(200).withBody(promResponse))
+      .willReturn(aResponse.withStatus(status).withBody(promResponse))
     )
   }
 

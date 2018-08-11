@@ -27,5 +27,18 @@ class PrometheusClientSpec extends FlatSpec with ScalaFutures with PrometheusInt
     }
   }
 
+  it should "return failed future when Prometheus response is not OK" in {
+    //given
+    configurePromStub("up", "Not found", 404)
+
+    //when
+    val metricFuture = PrometheusClient(PrometheusConfig(uri"localhost:$promPort")).fetch(PromQl("up").get)
+
+    //then
+    whenReady(metricFuture.failed) { ex =>
+      ex should have message "Querying Prometheus has failed. Query: PromQl(up). Response: status=404, body=Not found"
+    }
+  }
+
 }
 

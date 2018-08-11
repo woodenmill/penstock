@@ -46,4 +46,10 @@ class MetricExtractorSpec extends FlatSpec with Matchers {
 
     extracted.failure.exception should have message "Invalid response from Prometheus. Unparsable metric value: JInt(3)"
   }
+
+  it should "return Failure if response is invalid and not contain 'result' array section" in {
+    val extracted = MetricExtractor.extract[Counter](PromResponses.resultIsNotAnArray)
+
+    extracted.failure.exception should have message "Invalid response from Prometheus. 'result' field must be an array"
+  }
 }

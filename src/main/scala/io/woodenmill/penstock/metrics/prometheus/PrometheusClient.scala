@@ -29,10 +29,10 @@ case class PrometheusClient(config: Prometheus.PrometheusConfig) {
     val promApi = config.prometheusUrl.path("/api/v1/query")
     val request = sttp.get(promApi.param("query", query.query))
     request.send().flatMap {
-      case Response(body: Right[_, String], code, _, _, _) =>
-        val bodyString = body.value
-
-        Future.fromTry( MetricExtractor.extract[Counter](bodyString) )
+      case r @ Response(Right(body), code, _, _, _) if r.isSuccess =>
+        Future.fromTry( MetricExtractor.extract[Counter](body) )
+      case Response(Left(body), code, _, _, _) =>
+        Future.failed(new RuntimeException(s"Querying Prometheus has failed. Query: $query. Response: status=$code, body=${new String(body)}"))
     }
   }
 }

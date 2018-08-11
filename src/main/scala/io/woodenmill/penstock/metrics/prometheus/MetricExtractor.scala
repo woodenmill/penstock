@@ -26,6 +26,7 @@ object MetricExtractor {
     case JArray(value :: Nil) => Try((value \ "value") (1))
     case JArray(Nil) => Failure(new IllegalArgumentException("Metric does not exist"))
     case JArray(h :: tail) => Failure(new IllegalArgumentException("Prom Query returned more than one metric. Correct your query so it fetch only one metric"))
+    case _ => Failure(new IllegalArgumentException("Invalid response from Prometheus. 'result' field must be an array"))
   }
 
 }
