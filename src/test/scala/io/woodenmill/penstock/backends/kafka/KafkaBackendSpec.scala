@@ -3,17 +3,16 @@ package io.woodenmill.penstock.backends.kafka
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import io.woodenmill.penstock.LoadRunner
-import io.woodenmill.penstock.testutils.Ports
+import io.woodenmill.penstock.testutils.{Ports, Spec}
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfterAll
 
 import scala.concurrent.duration._
 import scala.util.Try
 
-class KafkaBackendSpec extends FlatSpec with Matchers with EmbeddedKafka with BeforeAndAfterAll with ScalaFutures with Eventually {
+class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
 
   val topic: String = "input"
   val kafkaPort: Int = Ports.nextAvailablePort()
@@ -22,7 +21,6 @@ class KafkaBackendSpec extends FlatSpec with Matchers with EmbeddedKafka with Be
   val kafkaBackend: KafkaBackend = KafkaBackend(bootstrapServer)
   implicit val stringDeserializer = new StringDeserializer()
   implicit val kafkaConfig = EmbeddedKafkaConfig(kafkaPort = kafkaPort, zooKeeperPort = Ports.nextAvailablePort())
-  implicit val testPatienceConfig: PatienceConfig = PatienceConfig(timeout = 2.seconds)
 
   override protected def beforeAll(): Unit = {
     EmbeddedKafka.start()(kafkaConfig)
@@ -36,40 +34,31 @@ class KafkaBackendSpec extends FlatSpec with Matchers with EmbeddedKafka with Be
 
 
   "Kafka Backend" should "send a message to Kafka" in {
-    //given
     val message = new ProducerRecord[Array[Byte], Array[Byte]](topic, "key".getBytes, "value".getBytes)
 
-    //when
     kafkaBackend.send(message)
 
-    //then
     consumeFirstKeyedMessageFrom[String, String](topic) shouldBe("key", "value")
   }
 
   it should "integrate with Load Runner" in {
-    //given
     val system = ActorSystem()
     val mat = ActorMaterializer()(system)
     val message = new ProducerRecord[Array[Byte], Array[Byte]](topic, "from-runner".getBytes)
 
-    //when
     val runnerFinished = LoadRunner(message, 1.milli, 1).run()(kafkaBackend, mat)
 
-    //then
     whenReady(runnerFinished) { _ =>
       consumeFirstStringMessageFrom(topic) shouldBe "from-runner"
     }
   }
 
   it should "expose basic Kafka Producer metrics" in withNewKafkaBackend(bootstrapServer){ backend =>
-    //given
     val someMessage = new ProducerRecord[Array[Byte], Array[Byte]](topic, "some message".getBytes)
 
-    //when
     backend.send(someMessage)
     backend.send(someMessage)
 
-    //then
     eventually {
       val metrics = backend.metrics()
       metrics.recordSendTotal.value shouldBe 2

@@ -1,5 +1,6 @@
-package io.woodenmill.penstock.backends
+package io.woodenmill.penstock.testutils
 
+import io.woodenmill.penstock.backends.StreamingBackend
 
 import scala.collection.mutable
 import scala.concurrent.Future

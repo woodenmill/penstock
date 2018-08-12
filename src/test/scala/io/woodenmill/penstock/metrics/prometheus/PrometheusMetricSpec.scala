@@ -5,15 +5,9 @@ import io.woodenmill.penstock.Metrics
 import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.metrics.prometheus.Prometheus.{PromQl, PrometheusConfig}
 import io.woodenmill.penstock.testutils.PromResponses.valid
-import io.woodenmill.penstock.testutils.PrometheusIntegratedSpec
-import org.scalatest.concurrent.Eventually
-import org.scalatest.{FlatSpec, Matchers}
+import io.woodenmill.penstock.testutils.{PrometheusIntegratedSpec, Spec}
 
-import scala.concurrent.duration._
-
-class PrometheusMetricSpec extends FlatSpec with Matchers with PrometheusIntegratedSpec with Eventually {
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout = 2.seconds)
+class PrometheusMetricSpec extends Spec with PrometheusIntegratedSpec {
 
   val actorSystem = ActorSystem()
   val promConfig = PrometheusConfig(prometheusUri)

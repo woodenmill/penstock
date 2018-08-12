@@ -1,13 +1,11 @@
 package io.woodenmill.penstock.metrics.prometheus
 
 import io.woodenmill.penstock.Metrics.{Counter, _}
-import io.woodenmill.penstock.testutils.PromResponses
-import org.scalatest.{FlatSpec, Matchers}
-import org.scalatest.TryValues._
+import io.woodenmill.penstock.testutils.{PromResponses, Spec}
 
 import scala.util.Success
 
-class MetricExtractorSpec extends FlatSpec with Matchers {
+class MetricExtractorSpec extends Spec {
 
   "MetricExtractor" should "extract a single metric from Prometheus Api response" in {
     val counter = MetricExtractor.extract[Counter](PromResponses.valid("44"))
