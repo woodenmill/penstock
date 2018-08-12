@@ -12,6 +12,8 @@ lazy val root = project.in(file("."))
     .configs( IntegrationTest )
     .settings( Defaults.itSettings : _*)
 
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
+
 libraryDependencies += "org.apache.kafka" % "kafka-clients" % "1.1.1" % Provided
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.14"
 libraryDependencies += "com.softwaremill.sttp" %% "core" % "1.2.3"
@@ -23,6 +25,10 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
 libraryDependencies += "net.manub" %% "scalatest-embedded-kafka" % "1.1.1" % Test
 libraryDependencies += "com.github.tomakehurst" % "wiremock" % "2.18.0" % Test
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3" % Test
+libraryDependencies += "io.circe" %% "circe-core" % "0.8.0" % Test
+libraryDependencies += "io.circe" %% "circe-generic" % "0.8.0" % Test
+libraryDependencies += "com.ovoenergy" %% "kafka-serialization-core" % "0.3.11" % Test
+libraryDependencies += "com.ovoenergy" %% "kafka-serialization-circe" % "0.3.11" % Test
 
 
 scalacOptions ++= Seq(
