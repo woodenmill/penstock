@@ -1,6 +1,5 @@
 package io.woodenmill.penstock.metrics.prometheus
 
-import com.softwaremill.sttp._
 import io.woodenmill.penstock.metrics.prometheus.Prometheus.{PromQl, PrometheusConfig}
 import io.woodenmill.penstock.testutils.{PromResponses, PrometheusIntegratedSpec}
 import org.scalatest.concurrent.ScalaFutures
@@ -19,7 +18,7 @@ class PrometheusClientSpec extends FlatSpec with ScalaFutures with PrometheusInt
     configurePromStub(query, PromResponses.valid("5"))
 
     //when
-    val metricFuture = PrometheusClient(PrometheusConfig(uri"localhost:$promPort")).fetch(PromQl(query).get)
+    val metricFuture = PrometheusClient(PrometheusConfig(prometheusUri)).fetch(PromQl(query).get)
 
     //then
     whenReady(metricFuture) { metric =>
@@ -32,7 +31,7 @@ class PrometheusClientSpec extends FlatSpec with ScalaFutures with PrometheusInt
     configurePromStub("up", "Not found", 404)
 
     //when
-    val metricFuture = PrometheusClient(PrometheusConfig(uri"localhost:$promPort")).fetch(PromQl("up").get)
+    val metricFuture = PrometheusClient(PrometheusConfig(prometheusUri)).fetch(PromQl("up").get)
 
     //then
     whenReady(metricFuture.failed) { ex =>

@@ -1,5 +1,7 @@
 package io.woodenmill.penstock.testutils
 
+import java.net.URI
+
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
@@ -7,8 +9,9 @@ import com.github.tomakehurst.wiremock.stubbing.Scenario
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Suite}
 
 trait PrometheusIntegratedSpec extends BeforeAndAfterAll with BeforeAndAfter { this: Suite =>
-  val promPort: Int = Ports.nextAvailablePort()
-  val wireMockServer = new WireMockServer(WireMockConfiguration.options().port(promPort))
+  val prometheusPort: Int = Ports.nextAvailablePort()
+  val prometheusUri: URI = new URI(s"localhost:$prometheusPort")
+  val wireMockServer = new WireMockServer(WireMockConfiguration.options().port(prometheusPort))
 
 
   before {
@@ -17,7 +20,7 @@ trait PrometheusIntegratedSpec extends BeforeAndAfterAll with BeforeAndAfter { t
 
   override protected def beforeAll(): Unit = {
     wireMockServer.start()
-    configureFor("localhost", promPort)
+    configureFor("localhost", prometheusPort)
   }
 
   override protected def afterAll(): Unit = wireMockServer.stop()

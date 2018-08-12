@@ -1,7 +1,6 @@
 package io.woodenmill.penstock.metrics.prometheus
 
 import akka.actor.ActorSystem
-import com.softwaremill.sttp._
 import io.woodenmill.penstock.Metrics.Counter
 import io.woodenmill.penstock.metrics.prometheus.Prometheus.{PromQl, PrometheusConfig}
 import io.woodenmill.penstock.testutils.PromResponses.valid
@@ -16,7 +15,7 @@ class PrometheusMetricSpec extends FlatSpec with Matchers with PrometheusIntegra
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout = 2.seconds)
 
   val actorSystem = ActorSystem()
-  val promConfig = PrometheusConfig(uri"localhost:$promPort")
+  val promConfig = PrometheusConfig(prometheusUri)
 
   "PrometheusMetric" should "fetch the value from Prometheus" in {
     //given

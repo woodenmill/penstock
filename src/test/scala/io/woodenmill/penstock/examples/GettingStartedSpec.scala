@@ -1,8 +1,8 @@
 package io.woodenmill.penstock.examples
 
+import java.net.URI
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.softwaremill.sttp._
 import io.woodenmill.penstock.LoadRunner
 import io.woodenmill.penstock.Metrics.Counter
 import io.woodenmill.penstock.backends.kafka.KafkaBackend
@@ -26,7 +26,7 @@ class GettingStartedSpec extends AsyncFlatSpec with Matchers with EmbeddedKafka 
   implicit val kafkaBackend: KafkaBackend = KafkaBackend(s"localhost:$kafkaPort")
   implicit val system: ActorSystem = ActorSystem("Getting-Started")
   implicit val mat: ActorMaterializer = ActorMaterializer()
-  implicit val promConfig: PrometheusConfig = PrometheusConfig(uri"localhost:$promPort")
+  implicit val promConfig: PrometheusConfig = PrometheusConfig(new URI(s"localhost:$prometheusPort"))
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
