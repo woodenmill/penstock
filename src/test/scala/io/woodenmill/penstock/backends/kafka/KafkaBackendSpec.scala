@@ -6,9 +6,12 @@ import io.woodenmill.penstock.LoadRunner
 import io.woodenmill.penstock.testutils.{Ports, Spec}
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer}
 import org.scalatest.BeforeAndAfterAll
+import com.ovoenergy.kafka.serialization.circe._
+import io.circe.generic.auto._
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -18,6 +21,8 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
   val kafkaPort: Int = Ports.nextAvailablePort()
   val bootstrapServer: String = s"localhost:$kafkaPort"
 
+  val system = ActorSystem()
+  val mat = ActorMaterializer()(system)
   val kafkaBackend: KafkaBackend = KafkaBackend(bootstrapServer)
   implicit val stringDeserializer = new StringDeserializer()
   implicit val kafkaConfig = EmbeddedKafkaConfig(kafkaPort = kafkaPort, zooKeeperPort = Ports.nextAvailablePort())
@@ -28,6 +33,7 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
   }
 
   override protected def afterAll(): Unit = {
+    Await.ready(system.terminate(), 5.seconds)
     kafkaBackend.shutdown()
     EmbeddedKafka.stop()
   }
@@ -42,14 +48,27 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
   }
 
   it should "integrate with Load Runner" in {
-    val system = ActorSystem()
-    val mat = ActorMaterializer()(system)
     val message = new ProducerRecord[Array[Byte], Array[Byte]](topic, "from-runner".getBytes)
 
     val runnerFinished = LoadRunner(message, 1.milli, 1).run()(kafkaBackend, mat)
 
     whenReady(runnerFinished) { _ =>
       consumeFirstStringMessageFrom(topic) shouldBe "from-runner"
+    }
+  }
+
+  it should "integrate with custom serializers" in {
+    case class User(name: String, property: Double)
+    implicit val userSer: Serializer[User] = circeJsonSerializer[User]
+
+    val user = User("Dominic", 34.3)
+    val message = KafkaMessage(topic, user).asRecord()
+
+    val runnerFinished = LoadRunner(message, 1.milli, 1).run()(kafkaBackend, mat)
+
+    whenReady(runnerFinished) { _ =>
+      implicit val deserializer: Deserializer[User] = circeJsonDeserializer[User]
+      consumeFirstMessageFrom[User](topic) shouldBe user
     }
   }
 
