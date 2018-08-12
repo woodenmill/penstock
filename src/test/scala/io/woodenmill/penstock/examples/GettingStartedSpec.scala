@@ -1,10 +1,11 @@
 package io.woodenmill.penstock.examples
 
 import java.net.URI
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import io.woodenmill.penstock.LoadRunner
-import io.woodenmill.penstock.Metrics.Counter
+import io.woodenmill.penstock.{LoadRunner, Metrics}
+import io.woodenmill.penstock.Metrics.{Counter, MetricFactory}
 import io.woodenmill.penstock.backends.kafka.KafkaBackend
 import io.woodenmill.penstock.metrics.prometheus.Prometheus.{PromQl, PrometheusConfig}
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric
@@ -20,13 +21,15 @@ class GettingStartedSpec extends AsyncFlatSpec with Matchers  {
   implicit val mat: ActorMaterializer = ActorMaterializer()
   implicit val kafkaBackend: KafkaBackend = KafkaBackend("localhost:9092")
   implicit val promConfig: PrometheusConfig = PrometheusConfig(new URI("localhost:9090"))
+  val mf: MetricFactory[Counter] = Metrics.counterFactory
 
 
   ignore should "send messages to Kafka and use custom Prometheus metric to verify behaviour" in {
     //given
     val topic: String = "input"
     val testMessage = new ProducerRecord[Array[Byte], Array[Byte]](topic, "test message".getBytes)
-    val kafkaTopicMessagesRate = PrometheusMetric[Counter](PromQl(s"""kafka_server_BrokerTopicMetrics_OneMinuteRate{name="MessagesInPerSec",topic="$topic"}""").get)
+    val query = PromQl(s"""kafka_server_BrokerTopicMetrics_OneMinuteRate{name="MessagesInPerSec",topic="$topic"}""", mf)
+    val kafkaTopicMessagesRate = PrometheusMetric[Counter](query)
 
     //when
     val loadFinished = LoadRunner(testMessage, duration = 5.minutes, throughput = 200).run()

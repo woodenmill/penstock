@@ -1,6 +1,7 @@
 package io.woodenmill.penstock.metrics.prometheus
 
 import io.woodenmill.penstock.Metric
+import io.woodenmill.penstock.Metrics.MetricFactory
 import org.json4s.JValue
 import org.json4s.JsonAST.{JArray, JString}
 import org.json4s.native.JsonMethods._
@@ -9,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 
 object MetricExtractor {
 
-  def extract[B <: Metric[_]](promResponse: String)(implicit g: String => Try[B]): Try[B] = {
+  def extract[B <: Metric[_]](promResponse: String)(implicit g: MetricFactory[B]): Try[B] = {
     parseOpt(promResponse).map(Success(_)).getOrElse(Failure(new IllegalArgumentException("Not a valid JSON")))
       .map(extractResult)
       .flatMap(extractMetricValue)
