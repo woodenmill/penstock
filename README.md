@@ -30,16 +30,18 @@ XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ## Running locally
 1. Clone the repository
 2. Run Kafka, Prometheus and Grafana locally
-```
- docker-compose -f ./docker/docker-compose.yml up --build
+```bash
+ docker-compose -f ./docker/docker-compose.yml up -d --build
 ```
 3. Run example load test
-```
+```bash
 sbt it:test
 ```
-4. Open Grafana dashboards
-```
-localhost:3000
+4. Open Grafana dashboards (login: admin, pass: admin) [http://localhost:3000](http://localhost:3000)
+
+To stop it
+```bash
+docker-compose -f ./docker/docker-compose.yml down
 ```
 
 ## Q&A
