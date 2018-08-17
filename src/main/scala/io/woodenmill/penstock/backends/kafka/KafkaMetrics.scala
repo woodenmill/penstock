@@ -22,14 +22,19 @@ object KafkaMetrics {
 }
 
 case class KafkaMetrics(rawMetrics: Map[MetricName, Metric], producerId: String) {
+  private val timestamp = System.currentTimeMillis()
 
   lazy val recordSendTotal: Metrics.Counter = {
-    val totalCount = rawMetrics(recordSendTotalName(producerId)).metricValue().asInstanceOf[Double]
-    Metrics.Counter(totalCount.toLong)
+    val totalCount: Metric = rawMetrics(recordSendTotalName(producerId))
+    val name = totalCount.metricName().name()
+    val value = totalCount.metricValue().asInstanceOf[Double]
+    Metrics.Counter(value.toLong, name, timestamp)
   }
 
   lazy val recordErrorTotal: Metrics.Counter = {
-    val errorCount = rawMetrics(KafkaMetrics.recordErrorTotalName(producerId)).metricValue().asInstanceOf[Double]
-    Metrics.Counter(errorCount.toLong)
+    val errorCount = rawMetrics(KafkaMetrics.recordErrorTotalName(producerId))
+    val name = errorCount.metricName().name()
+    val value = errorCount.metricValue().asInstanceOf[Double]
+    Metrics.Counter(value.toLong, name, timestamp)
   }
 }

@@ -17,8 +17,11 @@ resolvers += Resolver.bintrayRepo("ovotech", "maven")
 libraryDependencies += "org.apache.kafka" % "kafka-clients" % "1.1.1" % Provided
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.14"
 libraryDependencies += "com.softwaremill.sttp" %% "core" % "1.2.3"
-libraryDependencies += "com.softwaremill.sttp" %% "async-http-client-backend-future" % "1.2.3"
-libraryDependencies += "org.json4s" %% "json4s-native" % "3.6.0"
+libraryDependencies += "com.softwaremill.sttp" %% "async-http-client-backend-cats" % "1.3.0"
+libraryDependencies += "io.circe" %% "circe-core" % "0.9.3"
+libraryDependencies += "io.circe" %% "circe-generic" % "0.9.3"
+libraryDependencies += "io.circe" %% "circe-parser" % "0.9.3"
+libraryDependencies += "org.typelevel" %% "cats-effect" % "0.10.1"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.14" % Test
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
