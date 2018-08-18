@@ -47,6 +47,4 @@ class KafkaMessageSpec extends Spec {
     record.key() shouldBe "key".getBytes
     record.value() shouldBe "value".getBytes
   }
-
-
 }

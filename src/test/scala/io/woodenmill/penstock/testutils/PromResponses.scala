@@ -13,8 +13,8 @@ package io.woodenmill.penstock.testutils
         |}
       """.stripMargin
 
-    def responseWithNegativeValue: String =
-    """
+    def responseWithNegativeValue(time: Long): String =
+    s"""
       |{
       | "status": "success",
       | "data": {
@@ -28,7 +28,7 @@ package io.woodenmill.penstock.testutils
       |         "job": "kafka"
       |     },
       |   "value": [
-      |     1533934927.769,
+      |     $time,
       |     "-1"
       |   ]
       |  }
@@ -37,7 +37,7 @@ package io.woodenmill.penstock.testutils
       |}
     """.stripMargin
 
-    def valid(metricValue: String): String =
+    def valid(time: Long, metricValue: String): String =
       s"""
          |{
          | "status": "success",
@@ -51,32 +51,8 @@ package io.woodenmill.penstock.testutils
          |         "topic": "test"
          |       },
          |       "value": [
-         |         1533765030.363,
+         |         $time,
          |         "$metricValue"
-         |       ]
-         |     }
-         |   ]
-         | }
-         |}
-    """.stripMargin
-
-
-    val invalidValue: String =
-      s"""
-         |{
-         | "status": "success",
-         | "data": {
-         |   "resultType": "vector",
-         |   "result": [
-         |     {
-         |       "metric": {
-         |         "instance": "kafka:7071",
-         |         "job": "kafka",
-         |         "topic": "test"
-         |       },
-         |       "value": [
-         |         1533765030.363,
-         |         3
          |       ]
          |     }
          |   ]

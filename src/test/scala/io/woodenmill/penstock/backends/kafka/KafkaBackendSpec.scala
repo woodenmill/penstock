@@ -2,18 +2,17 @@ package io.woodenmill.penstock.backends.kafka
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.ovoenergy.kafka.serialization.circe._
+import io.circe.generic.auto._
 import io.woodenmill.penstock.LoadRunner
 import io.woodenmill.penstock.testutils.{Ports, Spec}
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer}
 import org.scalatest.BeforeAndAfterAll
-import com.ovoenergy.kafka.serialization.circe._
-import io.circe.generic.auto._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.util.Try
 
 class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
 
@@ -91,8 +90,8 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
 
   def withNewKafkaBackend(bootstrapServer: String)(f: KafkaBackend => Unit): Unit = {
     val backend = KafkaBackend(bootstrapServer)
-    Try( f(backend) )
-    backend.shutdown()
+    try f(backend)
+    finally backend.shutdown()
   }
 
 }
