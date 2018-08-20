@@ -73,19 +73,19 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
 
   it should "expose basic Kafka Producer metrics" in withNewKafkaBackend(bootstrapServer){ backend =>
     val someMessage = new ProducerRecord[Array[Byte], Array[Byte]](topic, "some message".getBytes)
+    val metrics = backend.metrics()
 
     backend.send(someMessage)
     backend.send(someMessage)
 
     eventually {
-      val metrics = backend.metrics()
-      metrics.recordSendTotal.value shouldBe 2
-      metrics.recordErrorTotal.value shouldBe 0
+      metrics.recordSendTotal.unsafeRunSync().value shouldBe 2
+      metrics.recordErrorTotal.unsafeRunSync().value shouldBe 0
     }
   }
 
   it should "expose metrics before any message is sent" in withNewKafkaBackend(bootstrapServer){ backend =>
-    backend.metrics().recordSendTotal.value shouldBe 0
+    backend.metrics().recordSendTotal.unsafeRunSync().value shouldBe 0
   }
 
   def withNewKafkaBackend(bootstrapServer: String)(f: KafkaBackend => Unit): Unit = {
