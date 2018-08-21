@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.effect.IO
 import io.woodenmill.penstock.LoadRunner
-import io.woodenmill.penstock.Metrics.Gauge
+import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.backends.kafka.{KafkaBackend, KafkaMessage}
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric._
 import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusConfig, PrometheusMetric}
@@ -32,14 +32,16 @@ class GettingStartedSpec extends AsyncFlatSpec with Matchers  {
     val testMessage = KafkaMessage(topic, "test message").asRecord()
 
     val messageRateDefinition: IO[Gauge] = PrometheusMetric[Gauge](metricName ="messages rate", query = q)
+    val recordErrorTotal: IO[Counter] = kafkaBackend.metrics().recordErrorTotal
+    val recordSendTotal: IO[Counter] = kafkaBackend.metrics().recordSendTotal
 
     //when
     val loadFinished = LoadRunner(testMessage, duration = 2.minutes, throughput = 200).run()
 
     //then
     loadFinished.map { _ =>
-      kafkaBackend.metrics().recordErrorTotal.value shouldBe 0
-      kafkaBackend.metrics().recordSendTotal.value should be (24000L +- 1000L)
+      recordErrorTotal.unsafeRunSync().value shouldBe 0
+      recordSendTotal.unsafeRunSync().value shouldBe (24000L +- 1000L)
       messageRateDefinition.unsafeRunSync().value shouldBe 200.0 +- 20.0
     }
   }
