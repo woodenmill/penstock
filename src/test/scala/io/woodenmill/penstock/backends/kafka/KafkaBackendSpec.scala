@@ -88,6 +88,16 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
     backend.metrics().recordSendTotal.unsafeRunSync().value shouldBe 0
   }
 
+  it should "expose metrics with timestamp set as the time of fetching the metric" in withNewKafkaBackend(bootstrapServer){ backend =>
+    val metrics = backend.metrics()
+
+    val first = metrics.recordSendTotal.unsafeRunSync().time
+    Thread.sleep(1)
+    val second = metrics.recordSendTotal.unsafeRunSync().time
+
+    first should be < second
+  }
+
   def withNewKafkaBackend(bootstrapServer: String)(f: KafkaBackend => Unit): Unit = {
     val backend = KafkaBackend(bootstrapServer)
     try f(backend)

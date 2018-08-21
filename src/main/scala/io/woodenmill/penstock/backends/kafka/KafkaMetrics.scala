@@ -24,7 +24,6 @@ object KafkaMetrics {
 }
 
 case class KafkaMetrics(rawMetricsIO: IO[Map[MetricName, Metric]], producerId: String) {
-  private val timestamp = System.currentTimeMillis()
 
   lazy val recordSendTotal: IO[Counter] = {
     for {
@@ -32,6 +31,7 @@ case class KafkaMetrics(rawMetricsIO: IO[Map[MetricName, Metric]], producerId: S
       totalCount = rawMetrics(recordSendTotalName(producerId))
       name = totalCount.metricName().name()
       value = totalCount.metricValue().asInstanceOf[Double]
+      timestamp = System.currentTimeMillis()
     } yield Metrics.Counter(value.toLong, name, timestamp)
   }
 
@@ -41,6 +41,7 @@ case class KafkaMetrics(rawMetricsIO: IO[Map[MetricName, Metric]], producerId: S
       errorCount: Metric = rawMetrics(KafkaMetrics.recordErrorTotalName(producerId))
       name = errorCount.metricName().name()
       value = errorCount.metricValue().asInstanceOf[Double]
+      timestamp = System.currentTimeMillis()
     } yield Metrics.Counter(value.toLong, name, timestamp)
   }
 }
