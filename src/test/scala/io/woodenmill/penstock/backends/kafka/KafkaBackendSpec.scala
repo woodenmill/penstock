@@ -92,10 +92,11 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
     val metrics = backend.metrics()
 
     val first = metrics.recordSendTotal.unsafeRunSync().time
-    Thread.sleep(1)
-    val second = metrics.recordSendTotal.unsafeRunSync().time
 
-    first should be < second
+    eventually {
+      val second = metrics.recordSendTotal.unsafeRunSync().time
+      first should be < second
+    }
   }
 
   def withNewKafkaBackend(bootstrapServer: String)(f: KafkaBackend => Unit): Unit = {
