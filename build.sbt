@@ -47,3 +47,4 @@ scalacOptions ++= Seq(
 
 logBuffered in Test := false
 parallelExecution in Test := false
+cancelable in Global := true
