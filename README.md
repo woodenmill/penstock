@@ -27,9 +27,21 @@ XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ```
 
+## Quickstart with sbt
+
+Add following Bintray repository:
+```
+Resolver.bintrayRepo("woodenmill", "oss-maven")
+```
+
+Then add following dependency:
+```
+"io.woodenmill" %% "penstock" % "0.0.1"
+```
+
 ## Running locally
 1. Clone the repository
-2. Run Kafka, Prometheus and Grafana locally
+2. Start Kafka, Prometheus and Grafana locally by running:
 ```bash
  docker-compose -f ./docker/docker-compose.yml up -d --build
 ```
@@ -39,7 +51,7 @@ sbt it:test
 ```
 4. Open Grafana dashboards (login: admin, pass: admin) [http://localhost:3000](http://localhost:3000)
 
-To stop it
+To stop it:
 ```bash
 docker-compose -f ./docker/docker-compose.yml down
 ```
