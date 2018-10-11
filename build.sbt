@@ -1,9 +1,10 @@
 name := "penstock"
-
+version := "0.0.1"
 organization := "io.woodenmill"
-
-version := "0.0.1-SNAPSHOT"
-
+bintrayOrganization := Some("woodenmill")
+bintrayRepository := "oss-maven"
+bintrayReleaseOnPublish in ThisBuild := false
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 scalaVersion := "2.12.6"
 
 lazy val IntegrationTest = config("it") extend Test
