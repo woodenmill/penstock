@@ -2,7 +2,7 @@ package io.woodenmill.penstock.backends.kafka
 
 import cats.effect.IO
 import io.woodenmill.penstock.Metrics
-import io.woodenmill.penstock.Metrics.Counter
+import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.backends.kafka.KafkaMetrics.recordSendTotalName
 import org.apache.kafka.common.{Metric, MetricName}
 
@@ -15,8 +15,16 @@ object KafkaMetrics {
     "",
     Map("client-id"->clientId).asJava
   )
+
   def recordErrorTotalName(clientId: String): MetricName = new MetricName(
     "record-error-total",
+    "producer-metrics",
+    "",
+    Map("client-id"->clientId).asJava
+  )
+
+  def recordSendRateName(clientId: String): MetricName = new MetricName(
+    "record-send-rate",
     "producer-metrics",
     "",
     Map("client-id"->clientId).asJava
@@ -43,5 +51,15 @@ case class KafkaMetrics(rawMetricsIO: IO[Map[MetricName, Metric]], producerId: S
       value = errorCount.metricValue().asInstanceOf[Double]
       timestamp = System.currentTimeMillis()
     } yield Metrics.Counter(value.toLong, name, timestamp)
+  }
+
+  lazy val recordSendRate: IO[Gauge]= {
+    for {
+      rawMetrics <- rawMetricsIO
+      recordSendRate: Metric = rawMetrics(KafkaMetrics.recordSendRateName(producerId))
+      name = recordSendRate.metricName().name()
+      value = recordSendRate.metricValue().asInstanceOf[Double]
+      timestamp = System.currentTimeMillis()
+    } yield Metrics.Gauge(value, name, timestamp)
   }
 }

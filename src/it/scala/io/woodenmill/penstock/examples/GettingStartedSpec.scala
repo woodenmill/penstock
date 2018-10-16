@@ -34,21 +34,22 @@ class GettingStartedSpec extends FlatSpec with Matchers {
   "GettingStarted example" should "send messages to Kafka and use custom Prometheus metric to verify behaviour" in {
     //given
     val testMessage = KafkaMessage(topic, "test message").asRecord()
-    val messageRateDefinition: IO[Gauge] = PrometheusMetric[Gauge](metricName = "messages rate", query = q)
+    val kafkaMessageInRate: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
     val recordErrorTotal: IO[Counter] = kafkaBackend.metrics().recordErrorTotal
     val recordSendTotal: IO[Counter] = kafkaBackend.metrics().recordSendTotal
+    val recordSendRate: IO[Gauge] = kafkaBackend.metrics().recordSendRate
 
     //when
     val loadFinished = LoadRunner(testMessage, duration = 2.minutes, throughput = 200).run()
 
     //then
-    ConsoleReport(messageRateDefinition, recordSendTotal, recordErrorTotal).runEvery(10.seconds)
+    ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal).runEvery(10.seconds)
 
     Await.ready(loadFinished, 5.minutes)
 
     recordErrorTotal.unsafeRunSync().value shouldBe 0
     recordSendTotal.unsafeRunSync().value shouldBe (24000L +- 1000L)
-    messageRateDefinition.unsafeRunSync().value shouldBe 200.0 +- 20.0
+    kafkaMessageInRate.unsafeRunSync().value shouldBe 200.0 +- 20.0
   }
 
 }
