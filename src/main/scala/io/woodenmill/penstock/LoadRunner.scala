@@ -17,15 +17,19 @@ case class LoadRunner[T](toSend: Seq[T], duration: FiniteDuration, throughput: I
 
   def run()(implicit backend: StreamingBackend[T], mat: ActorMaterializer): Future[Done] = {
 
-    val (killSwitch, loadRunnerFinishedFuture) = Source.cycle[T](() => toSend.iterator)
-      .throttle(throughput, per = 1.second)
-      .viaMat(KillSwitches.single)(Keep.right)
-      .toMat(Sink.foreach(backend.send))(Keep.both)
-      .run()(mat)
+    if(backend.isReady) {
+      val (killSwitch, loadRunnerFinishedFuture) = Source.cycle[T](() => toSend.iterator)
+        .throttle(throughput, per = 1.second)
+        .viaMat(KillSwitches.single)(Keep.right)
+        .toMat(Sink.foreach(backend.send))(Keep.both)
+        .run()(mat)
 
-    mat.system.scheduler.scheduleOnce(duration)(killSwitch.shutdown())(mat.executionContext)
+      mat.system.scheduler.scheduleOnce(duration)(killSwitch.shutdown())(mat.executionContext)
 
-    loadRunnerFinishedFuture
+      loadRunnerFinishedFuture
+    } else {
+      Future.failed(new IllegalStateException("Streaming Backend is not ready. LoadRunner will not start"))
+    }
   }
 
 }

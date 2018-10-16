@@ -8,7 +8,7 @@ import io.woodenmill.penstock.backends.StreamingBackend
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.{Metric, MetricName}
-
+import scala.concurrent.duration._
 import scala.collection.JavaConverters._
 
 
@@ -28,4 +28,6 @@ case class KafkaBackend(bootstrapServers: String) extends StreamingBackend[Produ
   def metrics(): KafkaMetrics = KafkaMetrics(rawMetrics, producerClientId)
 
   private val rawMetrics: IO[Map[MetricName, Metric]] = IO {producer.metrics().asScala.toMap }
+
+  override def isReady: Boolean = KafkaReadiness.isReady(bootstrapServers, 5.second)
 }
