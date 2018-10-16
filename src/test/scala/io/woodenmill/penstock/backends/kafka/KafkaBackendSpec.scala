@@ -99,6 +99,15 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
     }
   }
 
+  "Kafka Backend Readiness" should "return true if Kafka is available" in {
+    kafkaBackend.isReady shouldBe true
+  }
+
+  it should "return false if Kafka is not available" in withNewKafkaBackend("127.1.2.3:9092") { backend =>
+    backend.isReady shouldBe false
+  }
+
+
   def withNewKafkaBackend(bootstrapServer: String)(f: KafkaBackend => Unit): Unit = {
     val backend = KafkaBackend(bootstrapServer)
     try f(backend)

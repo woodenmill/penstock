@@ -58,5 +58,13 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
     }
   }
 
+  it should "fail fast if load target is not ready" in {
+    val backend = mockedBackend[String](isReady = false)
+
+    val runnerResult = LoadRunner("some msg", duration = 1.second, throughput = 1).run()(backend, mat)
+
+    runnerResult.failed.futureValue shouldBe an[IllegalStateException]
+  }
+
   override protected def afterAll(): Unit = Await.ready(actorSystem.terminate(), atMost = 5.seconds)
 }
