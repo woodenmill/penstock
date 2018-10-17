@@ -10,15 +10,16 @@ import scala.concurrent.duration._
 
 
 object LoadRunner {
-  def apply[T](toSend: T, duration: FiniteDuration, throughput: Int): LoadRunner[T] = LoadRunner(Seq(toSend), duration, throughput)
+  def apply[T](toSend: T, duration: FiniteDuration, throughput: Int): LoadRunner[T] = LoadRunner(() => List(toSend), duration, throughput)
+  def apply[T](toSend: List[T], duration: FiniteDuration, throughput: Int): LoadRunner[T] = LoadRunner(() => toSend, duration, throughput)
 }
 
-case class LoadRunner[T](toSend: Seq[T], duration: FiniteDuration, throughput: Int) {
+case class LoadRunner[T](toSend: () => List[T], duration: FiniteDuration, throughput: Int) {
 
   def run()(implicit backend: StreamingBackend[T], mat: ActorMaterializer): Future[Done] = {
 
     if(backend.isReady) {
-      val (killSwitch, loadRunnerFinishedFuture) = Source.cycle[T](() => toSend.iterator)
+      val (killSwitch, loadRunnerFinishedFuture) = Source.cycle[T](() => toSend().iterator)
         .throttle(throughput, per = 1.second)
         .viaMat(KillSwitches.single)(Keep.right)
         .toMat(Sink.foreach(backend.send))(Keep.both)

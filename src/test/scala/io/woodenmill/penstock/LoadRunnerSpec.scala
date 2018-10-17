@@ -1,5 +1,7 @@
 package io.woodenmill.penstock
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import io.woodenmill.penstock.testutils.Spec
@@ -26,13 +28,24 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
   }
 
   it should "accept many messages" in {
-    val messages = Seq("msg1", "msg2", "msg3")
+    val messages = List("msg1", "msg2", "msg3")
     val backend: MockedBackend[String] = mockedBackend()
 
     val runnerFinished = LoadRunner(messages, 1.milli, throughput = 100).run()(backend, mat)
 
     whenReady(runnerFinished) { _ =>
       backend.messages should contain allElementsOf messages
+    }
+  }
+
+  it should "accept a function that generates messages to send" in {
+    val messages = () => List(UUID.randomUUID())
+    val backend: MockedBackend[UUID] = mockedBackend()
+
+    LoadRunner(messages, 3.milli, throughput = 500).run()(backend, mat)
+
+    eventually {
+      backend.messages.distinct.size should be >= 2
     }
   }
 
