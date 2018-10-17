@@ -45,7 +45,7 @@ Then add following dependency:
 ```bash
  docker-compose -f ./docker/docker-compose.yml up -d --build
 ```
-3. Run example load test
+3. Run example load test - [GettingStartedSpec](./src/it/scala/io/woodenmill/penstock/examples/GettingStartedSpec.scala)
 ```bash
 sbt it:test
 ```
