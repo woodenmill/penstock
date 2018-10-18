@@ -31,13 +31,23 @@ class PrometheusClientSpec extends Spec with PrometheusIntegratedSpec {
     }
   }
 
-  it should "return error when Prometheus response has more than one result" in {
+  it should "return an error when Prometheus response has more than one result" in {
     configurePromStub("test", PromResponses.multipleMetricsResponse())
 
     val metricIO = promClient.fetch("test", PromQl("test"))
 
     whenReady(metricIO.unsafeToFuture().failed) { ex =>
-      ex should have message "Prometheus Response must have exactly one result. Correct PromQL query"
+      ex should have message "Prometheus Response had more than one result. Correct Prometheus query"
+    }
+  }
+
+  it should "return an error when Prometheus response has no data" in {
+    configurePromStub("no-data", PromResponses.noDataPoint)
+
+    val metricIO = promClient.fetch("no-data", PromQl("no-data"))
+
+    whenReady(metricIO.unsafeToFuture().failed) { ex =>
+      ex should have message "Prometheus Response had no data. Correct your Prometheus query"
     }
   }
 }

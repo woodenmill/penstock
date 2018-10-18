@@ -23,13 +23,12 @@ class ResponseValidatorSpec extends Spec with EitherValues {
     rawMetric shouldBe Right(RawMetric("test", -1.0, 1234L))
   }
 
-
   it should "return error if queried metrics does not exist" in {
     val promResponse = PromResponse(PromData(Seq.empty))
 
     val rawMetric = ResponseValidator.validateToRawMetric(promResponse, "some name")
 
-    rawMetric.left.value should have message "Prometheus Response must have exactly one result. Correct PromQL query"
+    rawMetric.left.value should have message "Prometheus Response had no data. Correct your Prometheus query"
   }
 
   it should "return error if given metric name is empty" in {

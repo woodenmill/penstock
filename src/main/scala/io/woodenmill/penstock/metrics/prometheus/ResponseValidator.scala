@@ -9,8 +9,12 @@ object ResponseValidator {
     override def getMessage: String
   }
 
-  case object PromDataMustHaveExactlyOneResult extends DomainValidation {
-    override def getMessage: String = "Prometheus Response must have exactly one result. Correct PromQL query"
+  case object PromDataHadMoreThanOneResult extends DomainValidation {
+    override def getMessage: String = "Prometheus Response had more than one result. Correct Prometheus query"
+  }
+
+  case object PromDataHadNoData extends DomainValidation {
+    override def getMessage: String = "Prometheus Response had no data. Correct your Prometheus query"
   }
 
   case object EmptyMetricName extends DomainValidation {
@@ -20,7 +24,8 @@ object ResponseValidator {
   def validateToRawMetric(promResponse: PromResponse, metricName: String): Either[Throwable, RawMetric] = {
     val a: Either[DomainValidation, RawMetric] = for {
       validMetricName <- validateMetricName(metricName)
-      validatedPromData <- validatePromData(promResponse.data)
+      nonEmptyPromData <- validatePromDataNonEmpty(promResponse.data)
+      validatedPromData <- validatePromDataHadOneResult(nonEmptyPromData)
       promValue = validatedPromData.value
     } yield RawMetric(validMetricName, promValue.metricValue, promValue.timestamp)
     a
@@ -34,10 +39,17 @@ object ResponseValidator {
     )
   }
 
-  private def validatePromData(promData: PromData): Either[PromDataMustHaveExactlyOneResult.type, PromResult] =
+  private def validatePromDataHadOneResult(promData: PromData): Either[PromDataHadMoreThanOneResult.type, PromResult] =
     Either.cond(
       promData.result.size == 1,
       promData.result.head,
-      PromDataMustHaveExactlyOneResult
+      PromDataHadMoreThanOneResult
+    )
+
+  private def validatePromDataNonEmpty(promData: PromData): Either[PromDataHadNoData.type, PromData] =
+    Either.cond(
+      promData.result.nonEmpty,
+      promData,
+      PromDataHadNoData
     )
 }

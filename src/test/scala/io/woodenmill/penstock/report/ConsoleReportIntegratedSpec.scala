@@ -35,7 +35,7 @@ class ConsoleReportIntegratedSpec extends Spec with PrometheusIntegratedSpec {
     ConsoleReport(metric).runEvery(10.milli)(system, mockedPrinter)
 
     eventually {
-      mockedPrinter.printed() should include("Error: Prometheus Response must have exactly one result. Correct PromQL query")
+      mockedPrinter.printed() should include("Error: Prometheus Response had no data. Correct your Prometheus query")
     }
   }
 
