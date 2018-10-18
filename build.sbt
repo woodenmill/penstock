@@ -20,12 +20,12 @@ val sttpVersion = "1.3.0"
 
 libraryDependencies += "org.apache.kafka" % "kafka-clients" % "1.1.1" % Provided
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.14"
+libraryDependencies += "org.typelevel" %% "cats-effect" % "1.0.0-RC2"
 libraryDependencies += "com.softwaremill.sttp" %% "core" % sttpVersion
 libraryDependencies += "com.softwaremill.sttp" %% "async-http-client-backend-cats" % sttpVersion
 libraryDependencies += "io.circe" %% "circe-core" % circeVersion
 libraryDependencies += "io.circe" %% "circe-generic" % circeVersion
 libraryDependencies += "io.circe" %% "circe-parser" % circeVersion
-libraryDependencies += "org.typelevel" %% "cats-effect" % "0.10.1"
 libraryDependencies += "de.vandermeer" % "asciitable" % "0.3.2"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.14" % Test
