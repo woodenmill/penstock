@@ -36,7 +36,7 @@ Resolver.bintrayRepo("woodenmill", "oss-maven")
 
 Then add following dependency:
 ```
-"io.woodenmill" %% "penstock" % "0.0.2"
+"io.woodenmill" %% "penstock" % "0.0.3"
 ```
 
 ## Running locally
