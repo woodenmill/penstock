@@ -38,6 +38,30 @@ Then add following dependency:
 ```
 "io.woodenmill" %% "penstock" % "0.0.3"
 ```
+## Example load test
+[GettingStartedSpec](./src/it/scala/io/woodenmill/penstock/examples/GettingStartedSpec.scala)
+```scala
+"GettingStarted example" should "send messages to Kafka and use custom Prometheus metric to verify behaviour" in {
+    //given
+    val messageGen = () => List(KafkaMessage(topic, s"test message, ID: ${UUID.randomUUID()}").asRecord())
+
+    val kafkaMessageInRate: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
+    val recordErrorTotal: IO[Counter] = kafkaBackend.metrics().recordErrorTotal
+    val recordSendTotal: IO[Counter] = kafkaBackend.metrics().recordSendTotal
+    val recordSendRate: IO[Gauge] = kafkaBackend.metrics().recordSendRate
+
+    //when
+    val loadFinished = LoadRunner(messageGen, duration = 2.minutes, throughput = 200).run()
+    ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal).runEvery(10.seconds)
+
+    //then
+    whenReady(loadFinished) { _ =>
+      recordErrorTotal.unsafeRunSync().value shouldBe 0
+      recordSendTotal.unsafeRunSync().value shouldBe (24000L +- 1000L)
+      kafkaMessageInRate.unsafeRunSync().value shouldBe 200.0 +- 20.0
+    }
+  }
+```
 
 ## Running locally
 1. Clone the repository
