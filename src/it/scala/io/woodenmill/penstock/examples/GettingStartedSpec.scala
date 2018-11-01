@@ -36,7 +36,13 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
 
   "GettingStarted example" should "send messages to Kafka and use custom Prometheus metric to verify behaviour" in {
     //given
-    val messageGen = () => List(KafkaMessage(topic, s"test message, ID: ${UUID.randomUUID()}").asRecord())
+    var expectedOutputMessages = List[String]()
+
+    val messageGen = () => {
+      val id = UUID.randomUUID().toString
+      expectedOutputMessages = id :: expectedOutputMessages
+      List(KafkaMessage(topic, s"test message, ID: $id").asRecord())
+    }
 
     val kafkaMessageInRate: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
     val recordErrorTotal: IO[Counter] = kafkaBackend.metrics().recordErrorTotal
