@@ -17,7 +17,7 @@ case class ConsoleReport(metricIos: IO[Metric[_]]*) {
     val report = metricIos
       .map(io => io.attempt)
       .toList.parSequence
-      .map(maybeMetrics => maybeMetrics.foldRight((List[Throwable](), List[Metric[_]]()))(spanEither))
+      .map(throwablesAndMetrics => throwablesAndMetrics.separate)
       .map { case (throwables, metrics) =>
         printer.printLine(AsciiTableFormatter.format(metrics))
         throwables.foreach(t => printer.printLine(s"Error: ${t.getMessage}"))
@@ -25,13 +25,6 @@ case class ConsoleReport(metricIos: IO[Metric[_]]*) {
 
     system.scheduler.schedule(0.seconds, interval) {
       report.unsafeRunSync()
-    }
-  }
-
-  private def spanEither[A, B](either: Either[A, B], acc: (List[A], List[B])): (List[A], List[B]) = {
-    either match {
-      case Left(t) => (t :: acc._1, acc._2)
-      case Right(m) => (acc._1, m :: acc._2)
     }
   }
 }
