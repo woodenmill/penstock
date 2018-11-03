@@ -40,9 +40,9 @@ class ConsoleReportSpec extends Spec {
 
   it should "fetch metrics value periodically" in {
     val mockedPrinter = MockedPrinter()
-    val metricIO = StubIO[Counter]()
-      .and(Counter(12, "counter", 0L))
-      .and(Counter(13, "counter", 1000L))
+    val metricIO = StubIO[Counter](List(
+      () => Counter(12, "counter", 0L),
+      () => Counter(13, "counter", 1000L)))
       .toIO()
 
     ConsoleReport(metricIO).runEvery(10.milliseconds)(system, mockedPrinter)
@@ -55,10 +55,10 @@ class ConsoleReportSpec extends Spec {
 
   it should "survive metrics fetching failure" in {
     val mockedPrinter = MockedPrinter()
-    val metricIO = StubIO[Counter]()
-      .and(() => throw new RuntimeException("error"))
-      .and(Counter(7, "now it works", 1000L))
-      .toIO()
+    val metricIO = StubIO[Counter](List(
+      () => throw new RuntimeException("error"),
+      () => Counter(7, "now it works", 1000L)))
+    .toIO()
 
     ConsoleReport(metricIO).runEvery(10.milliseconds)(system, mockedPrinter)
 
@@ -70,23 +70,13 @@ class ConsoleReportSpec extends Spec {
 }
 
 
-case class StubIO[T](input: List[() => T] = List()) {
-  private var results: List[() => T] = input
-
-  def and(m: T): StubIO[T] = this.and(() => m)
-
-  def and(m: () => T): StubIO[T] = StubIO(results ::: List(m))
+case class StubIO[T](responses: List[() => T]) {
+  private val stubs = Iterator.continually(responses).flatten
 
   def toIO(): IO[T] = IO {
-    results match {
-      case head :: Nil =>
-        head()
-      case head :: tail =>
-        this.results = tail
-        head()
-      case Nil => ???
-    }
+    stubs.next().apply()
   }
+
 }
 
 case class MockedPrinter() extends Printer {
