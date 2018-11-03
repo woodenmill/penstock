@@ -15,7 +15,7 @@ object TestBackends {
   def mockedBackend[T](isReady: Boolean = true): MockedBackend[T] = MockedBackend(isReady)
 
   case class MockedBackend[T](isReady: Boolean) extends StreamingBackend[T] {
-    var messages: mutable.Buffer[T] = mutable.Buffer()
+    val messages: mutable.Buffer[T] = mutable.Buffer()
     override def send(msg: T): Unit = messages += msg
   }
 
