@@ -6,14 +6,12 @@ import io.woodenmill.penstock.testutils.Spec
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{IntegerDeserializer, IntegerSerializer, Serializer, StringSerializer}
 
-class KafkaMessageSpec extends Spec {
+class CreateProducerRecordSpec extends Spec {
   implicit val stringSer: Serializer[String] = new StringSerializer()
   implicit val integerSer: Serializer[Integer] = new IntegerSerializer()
 
   "KafkaMessageSpec" should "be easily converted to ProducerRecord" in {
-    val kafkaMessage = KafkaMessage("topic", "test message")
-
-    val record: ProducerRecord[Array[Byte], Array[Byte]] = kafkaMessage.asRecord()
+    val record: ProducerRecord[Array[Byte], Array[Byte]] = createProducerRecord("topic", "test message")
 
     record.topic() shouldBe "topic"
     record.value() shouldBe "test message".getBytes
@@ -22,7 +20,7 @@ class KafkaMessageSpec extends Spec {
   it should "accept different types as a value, for instance Integer" in {
     val intDeserializer = new IntegerDeserializer()
 
-    val record = KafkaMessage("sometopic", new Integer(42)).asRecord()
+    val record = createProducerRecord("sometopic", new Integer(42))
 
     intDeserializer.deserialize(record.topic, record.value) shouldBe 42
   }
@@ -33,15 +31,13 @@ class KafkaMessageSpec extends Spec {
     val userDes = circeJsonDeserializer[User]
     val user = User(56, "Rose")
 
-    val record = KafkaMessage("sometopic", user).asRecord()
+    val record = createProducerRecord("sometopic", user)
 
     userDes.deserialize(record.topic, record.value()) shouldBe user
   }
 
   it should "allow to specify a message key" in {
-    val kafkaMessage = KafkaMessage("topic", "key", "value")
-
-    val record: ProducerRecord[Array[Byte], Array[Byte]] = kafkaMessage.asRecord()
+    val record: ProducerRecord[Array[Byte], Array[Byte]] = createProducerRecord("topic", "key", "value")
 
     record.topic() shouldBe "topic"
     record.key() shouldBe "key".getBytes
