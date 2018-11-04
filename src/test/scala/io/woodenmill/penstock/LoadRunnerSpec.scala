@@ -20,7 +20,7 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
     val message = "some message"
     val backend: MockedBackend[String] = mockedBackend()
 
-    val runnerFinished = LoadRunner(backend).send(message, 1.milli, throughput = 100)(mat)
+    val runnerFinished = LoadRunner(backend).start(message, 1.milli, throughput = 100)(mat)
 
     whenReady(runnerFinished) { _ =>
       backend.messages should contain(message)
@@ -31,7 +31,7 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
     val messages = List("msg1", "msg2", "msg3")
     val backend: MockedBackend[String] = mockedBackend()
 
-    val runnerFinished = LoadRunner(backend).send(messages, 1.milli, throughput = 100)(mat)
+    val runnerFinished = LoadRunner(backend).start(messages, 1.milli, throughput = 100)(mat)
 
     whenReady(runnerFinished) { _ =>
       backend.messages should contain allElementsOf messages
@@ -42,7 +42,7 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
     val messages = () => List(UUID.randomUUID())
     val backend: MockedBackend[UUID] = mockedBackend()
 
-    LoadRunner(backend).send(messages, 3.milli, throughput = 500)(mat)
+    LoadRunner(backend).start(messages, 3.milli, throughput = 500)(mat)
 
     eventually {
       backend.messages.distinct.size should be >= 2
@@ -53,7 +53,7 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
     val throughput: Int = 1000
     val backend = mockedBackend[String]()
 
-    val runnerFinished = LoadRunner(backend).send("some message", 1.second, throughput)(mat)
+    val runnerFinished = LoadRunner(backend).start("some message", 1.second, throughput)(mat)
 
     whenReady(runnerFinished) { _ =>
       backend.messages.size shouldBe 1000 +- 200
@@ -64,7 +64,7 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
     val throughput: Int = 1
     val backend = mockedBackend[String]()
 
-    val runnerFinished = LoadRunner(backend).send("some message", duration = 1.second, throughput)(mat)
+    val runnerFinished = LoadRunner(backend).start("some message", duration = 1.second, throughput)(mat)
 
     whenReady(runnerFinished) { _ =>
       backend.messages.size shouldBe 1 +- 1
@@ -74,7 +74,7 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
   it should "fail fast if load target is not ready" in {
     val backend = mockedBackend[String](isReady = false)
 
-    val runnerResult = LoadRunner(backend).send("some msg", duration = 1.second, throughput = 1)(mat)
+    val runnerResult = LoadRunner(backend).start("some msg", duration = 1.second, throughput = 1)(mat)
 
     runnerResult.failed.futureValue shouldBe an[IllegalStateException]
   }

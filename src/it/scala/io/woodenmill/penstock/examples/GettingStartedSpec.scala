@@ -47,7 +47,7 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
     val report = ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal)
 
     //when
-    val loadFinished = kafkaLoadRunner.send(messageGen, duration = 2.minutes, throughput = 200)
+    val loadFinished = kafkaLoadRunner.start(messageGen, duration = 2.minutes, throughput = 200)
     report.runEvery(10.seconds)
 
     //then
