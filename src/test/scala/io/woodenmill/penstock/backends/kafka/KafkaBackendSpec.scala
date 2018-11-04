@@ -49,7 +49,7 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
   it should "integrate with Load Runner" in {
     val message = new ProducerRecord[Array[Byte], Array[Byte]](topic, "from-runner".getBytes)
 
-    val runnerFinished = LoadRunner(message, 1.milli, 1).run()(kafkaBackend, mat)
+    val runnerFinished = LoadRunner(kafkaBackend).send(message, 1.milli, 1)(mat)
 
     whenReady(runnerFinished) { _ =>
       consumeFirstStringMessageFrom(topic) shouldBe "from-runner"
@@ -58,12 +58,12 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
 
   it should "integrate with custom serializers" in {
     case class User(name: String, property: Double)
-    implicit val userSer: Serializer[User] = circeJsonSerializer[User]
+    val userSer: Serializer[User] = circeJsonSerializer[User]
 
     val user = User("Dominic", 34.3)
-    val message = KafkaMessage(topic, user).asRecord()
+    val message = createProducerRecord(topic, user)(userSer)
 
-    val runnerFinished = LoadRunner(message, 1.milli, 1).run()(kafkaBackend, mat)
+    val runnerFinished = LoadRunner(kafkaBackend).send(message, 1.milli, 1)(mat)
 
     whenReady(runnerFinished) { _ =>
       implicit val deserializer: Deserializer[User] = circeJsonDeserializer[User]

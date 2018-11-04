@@ -8,7 +8,7 @@ import akka.stream.ActorMaterializer
 import cats.effect.IO
 import io.woodenmill.penstock.LoadRunner
 import io.woodenmill.penstock.Metrics.{Counter, Gauge}
-import io.woodenmill.penstock.backends.kafka.{KafkaBackend, KafkaMessage}
+import io.woodenmill.penstock.backends.kafka._
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric._
 import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusConfig, PrometheusMetric}
 import io.woodenmill.penstock.report.ConsoleReport
@@ -26,7 +26,9 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
   implicit val ec: ExecutionContext = system.dispatcher
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout = 5.minutes)
 
-  implicit val kafkaBackend: KafkaBackend = KafkaBackend("localhost:9092")
+  val kafkaBackend: KafkaBackend = KafkaBackend(bootstrapServers = "localhost:9092")
+  val kafkaLoadRunner = LoadRunner(backend = kafkaBackend)
+
   implicit val promConfig: PrometheusConfig = PrometheusConfig(new URI("localhost:9090"))
   implicit val stringSerializer: Serializer[String] = new StringSerializer()
 
@@ -36,16 +38,17 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
 
   "GettingStarted example" should "send messages to Kafka and use custom Prometheus metric to verify behaviour" in {
     //given
-    val messageGen = () => List(KafkaMessage(topic, s"test message, ID: ${UUID.randomUUID()}").asRecord())
+    val messageGen = () => List(createProducerRecord(topic, s"test message, ID: ${UUID.randomUUID()}"))
 
     val kafkaMessageInRate: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
     val recordErrorTotal: IO[Counter] = kafkaBackend.metrics().recordErrorTotal
     val recordSendTotal: IO[Counter] = kafkaBackend.metrics().recordSendTotal
     val recordSendRate: IO[Gauge] = kafkaBackend.metrics().recordSendRate
+    val report = ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal)
 
     //when
-    val loadFinished = LoadRunner(messageGen, duration = 2.minutes, throughput = 200).run()
-    ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal).runEvery(10.seconds)
+    val loadFinished = kafkaLoadRunner.send(messageGen, duration = 2.minutes, throughput = 200)
+    report.runEvery(10.seconds)
 
     //then
     whenReady(loadFinished) { _ =>

@@ -16,14 +16,14 @@ class LoadRunnerDurationSpec extends Spec with BeforeAndAfterAll {
   val config: Config = ConfigFactory.parseString("""akka.scheduler.implementation = "akka.testkit.ExplicitlyTriggeredScheduler"""")
   val system = ActorSystem("manualtime", config)
   val manualTime = system.scheduler.asInstanceOf[ExplicitlyTriggeredScheduler]
-  val materializer: ActorMaterializer = ActorMaterializer()(system)
+  val mat: ActorMaterializer = ActorMaterializer()(system)
   val backend: StreamingBackend[String] = TestBackends.doNothing[String]()
 
 
   "Load Runner" should "run as long as configured duration" in {
     val duration: FiniteDuration = 1.hour
 
-    val loadFinished = LoadRunner("some message", duration, throughput = 100).run()(backend, materializer)
+    val loadFinished = LoadRunner(backend).send("some message", duration, throughput = 100)(mat)
 
     loadFinished.isCompleted shouldBe false
     manualTime.timePasses(1.hour)
