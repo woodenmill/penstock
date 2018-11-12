@@ -15,26 +15,24 @@ class ConsoleReportSpec extends Spec {
 
   "Report" should "print metrics names values" in {
     val metric = IO(Counter(3, "the name", 1L))
-    val mockedPrinter = MockedPrinter()
 
-    ConsoleReport(metric).runEvery(10.milliseconds)(system, mockedPrinter)
+    val report = ConsoleReport.buildReport(List(metric)).unsafeRunSync()
 
     eventually {
-      mockedPrinter.printed() should include("3")
-      mockedPrinter.printed() should include("the name")
+      report should include("3")
+      report should include("the name")
     }
   }
 
   it should "allow to pass many metrics" in {
     val first = IO(Counter(44, "counter", 0L))
     val second = IO(Gauge(3.0, "gauge", 1L))
-    val mockedPrinter = MockedPrinter()
 
-    ConsoleReport(first, second).runEvery(10.milliseconds)(system, mockedPrinter)
+    val report = ConsoleReport.buildReport(List(first, second)).unsafeRunSync()
 
     eventually {
-      mockedPrinter.printed() should include("counter")
-      mockedPrinter.printed() should include("gauge")
+      report should include("counter")
+      report should include("gauge")
     }
   }
 
