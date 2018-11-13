@@ -11,15 +11,11 @@ import scala.concurrent.duration._
 
 case class LoadRunner[T](backend: StreamingBackend[T]) {
 
-  def start(toSend: List[T], duration: FiniteDuration, throughput: Int)(implicit mat: ActorMaterializer): Future[Done] = {
-    this.start(() => toSend, duration, throughput)(mat)
+  def start(toSend: () => T, duration: FiniteDuration, throughput: Int)(implicit mat: ActorMaterializer): Future[Done] = {
+    start(() => List(toSend()) , duration, throughput)
   }
 
-  def start(toSend: T, duration: FiniteDuration, throughput: Int)(implicit mat: ActorMaterializer): Future[Done] = {
-    this.start(() => List(toSend), duration, throughput)(mat)
-  }
-
-  def start(toSend: () => List[T], duration: FiniteDuration, throughput: Int)(implicit mat: ActorMaterializer): Future[Done] = {
+  def start(toSend: () => List[T], duration: FiniteDuration, throughput: Int)(implicit mat: ActorMaterializer, d: DummyImplicit): Future[Done] = {
 
     if(backend.isReady) {
       val (killSwitch, loadRunnerFinishedFuture) = Source.cycle[T](() => toSend().iterator)
