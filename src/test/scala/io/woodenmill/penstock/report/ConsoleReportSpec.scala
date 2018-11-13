@@ -1,6 +1,7 @@
 package io.woodenmill.penstock.report
 
 import akka.actor.ActorSystem
+import cats.data.NonEmptyList
 import cats.effect.IO
 import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.testutils.Spec
@@ -16,7 +17,7 @@ class ConsoleReportSpec extends Spec {
   "Report" should "print metrics names values" in {
     val metric = IO(Counter(3, "the name", 1L))
 
-    val report = ConsoleReport.buildReport(List(metric)).unsafeRunSync()
+    val report = ConsoleReport.buildReport(NonEmptyList.of(metric)).unsafeRunSync()
 
     eventually {
       report should include("3")
@@ -28,7 +29,7 @@ class ConsoleReportSpec extends Spec {
     val first = IO(Counter(44, "counter", 0L))
     val second = IO(Gauge(3.0, "gauge", 1L))
 
-    val report = ConsoleReport.buildReport(List(first, second)).unsafeRunSync()
+    val report = ConsoleReport.buildReport(NonEmptyList.of(first, second)).unsafeRunSync()
 
     eventually {
       report should include("counter")
@@ -64,6 +65,10 @@ class ConsoleReportSpec extends Spec {
       mockedPrinter.printed() should include("error")
       mockedPrinter.printed() should include("now it works")
     }
+  }
+
+  it should "not compile if user does not provide at least one metric" in {
+    assertDoesNotCompile("ConsoleReport()")
   }
 }
 
