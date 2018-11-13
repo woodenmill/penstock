@@ -35,6 +35,7 @@ libraryDependencies += "com.github.tomakehurst" % "wiremock" % "2.18.0" % Test
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3" % Test
 libraryDependencies += "com.ovoenergy" %% "kafka-serialization-core" % "0.3.11" % Test
 libraryDependencies += "com.ovoenergy" %% "kafka-serialization-circe" % "0.3.11" % Test
+libraryDependencies += "com.danielasfregola" %% "random-data-generator" % "2.6" % Test
 
 
 scalacOptions ++= Seq(
@@ -45,7 +46,8 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code",
   "-Ywarn-infer-any",
   "-Ywarn-unused:imports",
-  "-Ywarn-unused:implicits"
+  "-Ywarn-unused:implicits",
+  "-Ywarn-unused:params"
 )
 
 logBuffered in Test := false
