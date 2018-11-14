@@ -16,7 +16,7 @@ case class LoadRunner[T](backend: StreamingBackend[T]) {
   }
 
   def start(toSend: () => List[T], duration: FiniteDuration, throughput: Int)(implicit mat: ActorMaterializer, d: DummyImplicit): Future[Done] = {
-
+    assert(throughput > 0, "Throughput must be a positive integer")
     if(backend.isReady) {
       val (killSwitch, loadRunnerFinishedFuture) = Source.cycle[T](() => toSend().iterator)
         .throttle(throughput, per = 1.second)

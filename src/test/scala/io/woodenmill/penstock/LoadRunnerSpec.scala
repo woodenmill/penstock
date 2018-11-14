@@ -79,5 +79,15 @@ class LoadRunnerSpec extends Spec with BeforeAndAfterAll {
     runnerResult.failed.futureValue shouldBe an[IllegalStateException]
   }
 
+  it should "fail fast if given throughput is not a positive number" in {
+    val negativeThroughput = -100
+
+    val caught = intercept[AssertionError] {
+        LoadRunner(mockedBackend[String]()).start(() => "somemessage", duration = 1.milli, negativeThroughput)
+    }
+
+    caught.getMessage shouldBe "assertion failed: Throughput must be a positive integer"
+  }
+
   override protected def afterAll(): Unit = Await.ready(actorSystem.terminate(), atMost = 5.seconds)
 }
