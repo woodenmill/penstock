@@ -2,9 +2,10 @@ package io.woodenmill.penstock.backends.kafka
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import cats.effect.IO
 import com.ovoenergy.kafka.serialization.circe._
 import io.circe.generic.auto._
-import io.woodenmill.penstock.LoadRunner
+import io.woodenmill.penstock.{LoadRunner, Metrics}
 import io.woodenmill.penstock.testutils.{Ports, Spec}
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -73,7 +74,7 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
 
   it should "expose basic Kafka Producer metrics" in withNewKafkaBackend(bootstrapServer){ backend =>
     val someMessage = new ProducerRecord[Array[Byte], Array[Byte]](topic, "some message".getBytes)
-    val metrics = backend.metrics()
+    val metrics = backend.metrics
 
     backend.send(someMessage)
     backend.send(someMessage)
@@ -84,12 +85,49 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
     }
   }
 
+  it should "allow creating a counter from producer metrics" in {
+    val producerMetricIO: IO[Metrics.Counter] = kafkaBackend.metrics.counter(ProducerMetricName("outgoing-byte-total"))
+
+    val producerMetric = producerMetricIO.unsafeRunSync()
+
+    producerMetric.name shouldBe "outgoing-byte-total"
+    producerMetric.value should be >= 0L
+  }
+
+  it should "allow creating a gauge from producer metrics" in {
+    val producerMetricsIO: IO[Metrics.Gauge] = kafkaBackend.metrics.gauge(ProducerMetricName("outgoing-byte-rate"))
+
+    val producerMetric = producerMetricsIO.unsafeRunSync()
+
+    producerMetric.name shouldBe "outgoing-byte-rate"
+    producerMetric.value should be >= 0.0
+  }
+
+  it should "give the list of supported producer metrics when given counter's name is incorrect" in {
+    val incorrectMetric = kafkaBackend.metrics.counter(ProducerMetricName("incorrect-counter-name"))
+
+    whenReady(incorrectMetric.unsafeToFuture().failed) { e =>
+      e.getMessage should include("connection-count")
+      e.getMessage should include("byte-total")
+      e.getMessage should include("request-latency-max")
+    }
+  }
+
+  it should "give the list of supported producer metrics when given gauge's name is incorrect" in {
+    val incorrectMetric = kafkaBackend.metrics.gauge(ProducerMetricName("incorrect-gauge-name"))
+
+    whenReady(incorrectMetric.unsafeToFuture().failed) { e =>
+      e.getMessage should include("io-ratio")
+      e.getMessage should include("response-rate")
+    }
+  }
+
   it should "expose metrics before any message is sent" in withNewKafkaBackend(bootstrapServer){ backend =>
-    backend.metrics().recordSendTotal.unsafeRunSync().value shouldBe 0
+    backend.metrics.recordSendTotal.unsafeRunSync().value shouldBe 0
   }
 
   it should "expose metrics with timestamp set as the time of fetching the metric" in withNewKafkaBackend(bootstrapServer){ backend =>
-    val metrics = backend.metrics()
+    val metrics = backend.metrics
 
     val first = metrics.recordSendTotal.unsafeRunSync().time
 
