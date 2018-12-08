@@ -42,9 +42,9 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
     val messageGen = () => List(createProducerRecord(topic, s"test message, ID: ${UUID.randomUUID()}"))
 
     val kafkaMessageInRate: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
-    val recordErrorTotal: IO[Counter] = kafkaBackend.metrics().recordErrorTotal
-    val recordSendTotal: IO[Counter] = kafkaBackend.metrics().recordSendTotal
-    val recordSendRate: IO[Gauge] = kafkaBackend.metrics().recordSendRate
+    val recordErrorTotal: IO[Counter] = kafkaBackend.metrics.recordErrorTotal
+    val recordSendTotal: IO[Counter] = kafkaBackend.metrics.recordSendTotal
+    val recordSendRate: IO[Gauge] = kafkaBackend.metrics.recordSendRate
     val report = ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal)
 
     //when
