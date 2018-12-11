@@ -3,13 +3,11 @@ package io.woodenmill.penstock.backends.kafka
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.effect.IO
-import com.ovoenergy.kafka.serialization.circe._
-import io.circe.generic.auto._
-import io.woodenmill.penstock.{LoadRunner, Metrics}
 import io.woodenmill.penstock.testutils.{Ports, Spec}
+import io.woodenmill.penstock.{LoadRunner, Metrics}
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringDeserializer}
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.scalatest.BeforeAndAfterAll
 
 import scala.concurrent.Await
@@ -54,21 +52,6 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
 
     whenReady(runnerFinished) { _ =>
       consumeFirstStringMessageFrom(topic) shouldBe "from-runner"
-    }
-  }
-
-  it should "integrate with custom serializers" in {
-    case class User(name: String, property: Double)
-    val userSer: Serializer[User] = circeJsonSerializer[User]
-
-    val user = User("Dominic", 34.3)
-    val message = createProducerRecord(topic, user)(userSer)
-
-    val runnerFinished = LoadRunner(kafkaBackend).start(()=> message, 1.milli, 1)(mat)
-
-    whenReady(runnerFinished) { _ =>
-      implicit val deserializer: Deserializer[User] = circeJsonDeserializer[User]
-      consumeFirstMessageFrom[User](topic) shouldBe user
     }
   }
 
