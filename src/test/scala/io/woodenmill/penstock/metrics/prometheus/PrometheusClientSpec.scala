@@ -41,6 +41,16 @@ class PrometheusClientSpec extends Spec with PrometheusIntegratedSpec {
     }
   }
 
+  it should "return an error when Prometheus response structure is invalid" in {
+    configurePromStub("invalid-response", PromResponses.resultIsNotAnArray)
+
+    val metricIO = promClient.fetch("test", PromQl("invalid-response"))
+
+    whenReady(metricIO.unsafeToFuture().failed) { ex =>
+      ex.getMessage should include("Prometheus response is invalid.")
+    }
+  }
+
   it should "return an error when Prometheus response has no data" in {
     configurePromStub("no-data", PromResponses.noDataPoint)
 
