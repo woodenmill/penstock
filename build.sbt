@@ -19,7 +19,7 @@ val sttpVersion = "1.3.0"
 
 libraryDependencies += "org.apache.kafka" % "kafka-clients" % "1.1.1" % Provided
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.14"
-libraryDependencies += "org.typelevel" %% "cats-effect" % "1.0.0-RC2"
+libraryDependencies += "org.typelevel" %% "cats-effect" % "1.1.0"
 libraryDependencies += "com.softwaremill.sttp" %% "core" % sttpVersion
 libraryDependencies += "com.softwaremill.sttp" %% "async-http-client-backend-cats" % sttpVersion
 libraryDependencies += "com.lihaoyi" %% "upickle" % "0.7.1"
@@ -30,7 +30,6 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
 libraryDependencies += "net.manub" %% "scalatest-embedded-kafka" % "1.1.1" % Test
 libraryDependencies += "com.github.tomakehurst" % "wiremock" % "2.18.0" % Test
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3" % Test
-
 
 scalacOptions ++= Seq(
   "-deprecation",

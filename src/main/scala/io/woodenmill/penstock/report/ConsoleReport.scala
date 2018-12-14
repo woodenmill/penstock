@@ -2,7 +2,7 @@ package io.woodenmill.penstock.report
 
 import akka.actor.ActorSystem
 import cats.data.NonEmptyList
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import cats.implicits._
 import io.woodenmill.penstock.Metric
 
@@ -13,7 +13,7 @@ object ConsoleReport {
 
   type Report = String
 
-  private[report] def buildReport(metricIOs: NonEmptyList[IO[Metric[_]]])(implicit ec: ExecutionContext): IO[Report] =
+  private[report] def buildReport(metricIOs: NonEmptyList[IO[Metric[_]]])(implicit ec: ContextShift[IO]): IO[Report] =
     metricIOs
       .map(io => io.attempt)
       .parSequence
@@ -34,7 +34,7 @@ case class ConsoleReport(metric: IO[Metric[_]], moreMetrics: IO[Metric[_]]*) {
   def runEvery(interval: FiniteDuration)(implicit system: ActorSystem, printer: Printer = ConsolePrinter()): Unit = {
     implicit val ec: ExecutionContext = system.dispatcher
     system.scheduler.schedule(0.seconds, interval) {
-      ConsoleReport.buildReport(allMetrics)
+      ConsoleReport.buildReport(allMetrics)(IO.contextShift(ec))
         .map(report => printer.printLine(report))
         .unsafeRunSync()
     }
