@@ -10,25 +10,24 @@ class PrometheusMetricSpec extends Spec with PrometheusIntegratedSpec {
   implicit val promConfig: PrometheusConfig = PrometheusConfig(prometheusUri)
 
   "PrometheusMetric" should "fetch the value from Prometheus" in {
-    configurePromStub("up", valid(1234567L, "7.1"))
+    configurePromStub("up", valid("7.1"))
 
     val counterMetric = PrometheusMetric[Counter]("up", PromQl("up")).unsafeRunSync()
 
-    counterMetric shouldBe Counter(7, "up", 1234567L)
+    counterMetric shouldBe Counter(7, "up")
   }
 
   it should "support Gauge metric" in {
-    configurePromStub("messagesRate", valid(1L, "198.2876758707929"))
+    configurePromStub("messagesRate", valid("198.2876758707929"))
 
     val gaugeMetric = PrometheusMetric[Gauge]("messagesRate", PromQl("messagesRate")).unsafeRunSync()
 
     gaugeMetric.value shouldBe 198.287 +- 0.1
     gaugeMetric.name shouldBe "messagesRate"
-    gaugeMetric.time shouldBe 1L
   }
 
   it should "fetch a metric periodically" in {
-    configurePromStub("sum(up)", valid(1L, "1"), valid(2L, "2"), valid(3L, "3"))
+    configurePromStub("sum(up)", valid("1"), valid("2"), valid("3"))
 
     val counterMetric = PrometheusMetric[Counter]("sum", PromQl("sum(up)"))
 

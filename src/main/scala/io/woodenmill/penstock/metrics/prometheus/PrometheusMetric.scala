@@ -12,8 +12,8 @@ object PrometheusMetric {
       .map(f)
   }
 
-  case class RawMetric(metricName: String, metricValue: Double, metricTimestamp: Long)
+  case class RawMetric(metricName: String, metricValue: Double)
 
-  implicit val promValueToGauge: RawMetric => Gauge = m => Gauge(m.metricValue, m.metricName, m.metricTimestamp)
-  implicit val promValueToCounter: RawMetric => Counter = m => Counter(m.metricValue.toLong, m.metricName, m.metricTimestamp)
+  implicit val promValueToGauge: RawMetric => Gauge = m => Gauge(m.metricValue, m.metricName)
+  implicit val promValueToCounter: RawMetric => Counter = m => Counter(m.metricValue.toLong, m.metricName)
 }

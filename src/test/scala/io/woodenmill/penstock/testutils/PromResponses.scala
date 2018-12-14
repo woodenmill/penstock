@@ -37,7 +37,7 @@ package io.woodenmill.penstock.testutils
       |}
     """.stripMargin
 
-    def valid(time: Long, metricValue: String): String =
+    def valid(metricValue: String): String =
       s"""
          |{
          | "status": "success",
@@ -51,7 +51,7 @@ package io.woodenmill.penstock.testutils
          |         "topic": "test"
          |       },
          |       "value": [
-         |         $time,
+         |         1234567,
          |         "$metricValue"
          |       ]
          |     }

@@ -11,14 +11,13 @@ class PrometheusClientSpec extends Spec with PrometheusIntegratedSpec {
 
   "Prometheus client" should "fetch metric value from Prometheus" in {
     val query = "up"
-    configurePromStub(query, PromResponses.valid(1234L, "5"))
+    configurePromStub(query, PromResponses.valid("5"))
 
     val metricIO: IO[RawMetric] = promClient.fetch("up", PromQl(query))
 
     val m = metricIO.unsafeRunSync()
     m.metricName shouldBe "up"
     m.metricValue shouldBe 5.0
-    m.metricTimestamp shouldBe 1234L
   }
 
   it should "return error when Prometheus response is not OK" in {
