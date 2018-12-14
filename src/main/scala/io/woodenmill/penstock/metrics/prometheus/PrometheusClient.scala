@@ -17,7 +17,6 @@ object PrometheusClient {
   case class PromData(result: Seq[PromResult])
 
   case class PromResult(value: (Long, Double)) {
-    val timestamp: Long = value._1
     val metricValue: Double = value._2
   }
 

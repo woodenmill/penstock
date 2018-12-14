@@ -15,7 +15,7 @@ class ConsoleReportSpec extends Spec {
   implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.Implicits.global)
 
   "Report" should "print metrics names values" in {
-    val metric = IO(Counter(3, "the name", 1L))
+    val metric = IO(Counter(3, "the name"))
 
     val report = ConsoleReport.buildReport(NonEmptyList.of(metric)).unsafeRunSync()
 
@@ -26,8 +26,8 @@ class ConsoleReportSpec extends Spec {
   }
 
   it should "allow to pass many metrics" in {
-    val first = IO(Counter(44, "counter", 0L))
-    val second = IO(Gauge(3.0, "gauge", 1L))
+    val first = IO(Counter(44, "counter"))
+    val second = IO(Gauge(3.0, "gauge"))
 
     val report = ConsoleReport.buildReport(NonEmptyList.of(first, second)).unsafeRunSync()
 
@@ -40,8 +40,8 @@ class ConsoleReportSpec extends Spec {
   it should "fetch metrics value periodically" in {
     val mockedPrinter = MockedPrinter()
     val metricIO = StubIO[Counter](List(
-      () => Counter(12, "counter", 0L),
-      () => Counter(13, "counter", 1000L)))
+      () => Counter(12, "counter"),
+      () => Counter(13, "counter")))
       .toIO()
 
     ConsoleReport(metricIO).runEvery(10.milliseconds)(system, mockedPrinter)
@@ -56,7 +56,7 @@ class ConsoleReportSpec extends Spec {
     val mockedPrinter = MockedPrinter()
     val metricIO = StubIO[Counter](List(
       () => throw new RuntimeException("error"),
-      () => Counter(7, "now it works", 1000L)))
+      () => Counter(7, "now it works")))
     .toIO()
 
     ConsoleReport(metricIO).runEvery(10.milliseconds)(system, mockedPrinter)

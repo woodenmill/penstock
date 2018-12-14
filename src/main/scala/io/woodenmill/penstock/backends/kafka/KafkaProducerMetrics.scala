@@ -25,8 +25,7 @@ case class KafkaProducerMetrics(allMetrics: IO[Map[ProducerMetricName, Metric]])
       .map { m =>
         val value = m.metricValue().asInstanceOf[Double]
         val name = m.metricName().name()
-        val timestamp = System.currentTimeMillis()
-        Metrics.Counter(value.toLong, name, timestamp)
+        Metrics.Counter(value.toLong, name)
       }
   }
 
@@ -35,8 +34,7 @@ case class KafkaProducerMetrics(allMetrics: IO[Map[ProducerMetricName, Metric]])
       .map { m =>
         val value = m.metricValue().asInstanceOf[Double]
         val name = m.metricName().name()
-        val timestamp = System.currentTimeMillis()
-        Metrics.Gauge(value, name, timestamp)
+        Metrics.Gauge(value, name)
       }
   }
 

@@ -17,7 +17,7 @@ class ConsoleReportIntegratedSpec extends Spec with PrometheusIntegratedSpec {
   "Console Report" should "print metrics values fetched from Prometheus" in {
     val metric = PrometheusMetric[Counter]("up", PromQl("up"))
     val mockedPrinter = MockedPrinter()
-    configurePromStub("up", PromResponses.valid(1234L, "1478"), 200)
+    configurePromStub("up", PromResponses.valid("1478"), 200)
 
     ConsoleReport(metric).runEvery(10.milli)(system, mockedPrinter)
 

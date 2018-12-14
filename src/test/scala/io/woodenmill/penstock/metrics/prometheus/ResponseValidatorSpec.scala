@@ -12,7 +12,7 @@ class ResponseValidatorSpec extends Spec with EitherValues {
 
     val rawMetric = ResponseValidator.validateToRawMetric(promResponse, "name")
 
-    rawMetric shouldBe Right(RawMetric("name", 2.3, 5678L))
+    rawMetric shouldBe Right(RawMetric("name", 2.3))
   }
 
   it should "extract negative values" in {
@@ -20,7 +20,7 @@ class ResponseValidatorSpec extends Spec with EitherValues {
 
     val rawMetric = ResponseValidator.validateToRawMetric(promResponse, "test")
 
-    rawMetric shouldBe Right(RawMetric("test", -1.0, 1234L))
+    rawMetric shouldBe Right(RawMetric("test", -1.0))
   }
 
   it should "return error if queried metrics does not exist" in {

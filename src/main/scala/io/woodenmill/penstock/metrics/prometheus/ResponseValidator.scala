@@ -26,7 +26,7 @@ object ResponseValidator {
       validMetricName <- validateMetricName(metricName)
       nonEmptyPromData <- validatePromDataNonEmpty(promResponse.data)
       validatedPromData <- validatePromDataHadOneResult(nonEmptyPromData)
-    } yield RawMetric(validMetricName, validatedPromData.metricValue, validatedPromData.timestamp)
+    } yield RawMetric(validMetricName, validatedPromData.metricValue)
     a
   }
 
