@@ -2,7 +2,7 @@ package io.woodenmill.penstock.report
 
 import akka.actor.ActorSystem
 import cats.data.NonEmptyList
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.testutils.Spec
 
@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 class ConsoleReportSpec extends Spec {
 
   val system = ActorSystem()
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
+  implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.Implicits.global)
 
   "Report" should "print metrics names values" in {
     val metric = IO(Counter(3, "the name", 1L))
