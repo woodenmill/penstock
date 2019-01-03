@@ -6,7 +6,7 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.effect.IO
-import io.woodenmill.penstock.LoadRunner
+import io.woodenmill.penstock.LoadGenerator
 import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.backends.kafka._
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric._
@@ -27,7 +27,7 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout = 5.minutes)
 
   val kafkaBackend: KafkaBackend = KafkaBackend(bootstrapServers = "localhost:9092")
-  val kafkaLoadRunner = LoadRunner(backend = kafkaBackend)
+  val kafkaLoadGenerator = LoadGenerator(backend = kafkaBackend)
 
   implicit val promConfig: PrometheusConfig = PrometheusConfig(new URI("localhost:9090"))
   implicit val stringSerializer: Serializer[String] = new StringSerializer()
@@ -47,11 +47,11 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
     val report = ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal)
 
     //when
-    val loadFinished = kafkaLoadRunner.start(messageGen, duration = 2.minutes, throughput = 200)
+    val finished = kafkaLoadGenerator.generate(messageGen, duration = 2.minutes, throughput = 200).unsafeToFuture()
     report.runEvery(10.seconds)
 
     //then
-    whenReady(loadFinished) { _ =>
+    whenReady(finished) { _ =>
       recordErrorTotal.unsafeRunSync().value shouldBe 0
       recordSendTotal.unsafeRunSync().value shouldBe (24000L +- 1000L)
       kafkaMessageInRate.unsafeRunSync().value shouldBe 200.0 +- 20.0

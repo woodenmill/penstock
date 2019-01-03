@@ -23,7 +23,7 @@ class LoadRunnerDurationSpec extends Spec with BeforeAndAfterAll {
   "Load Runner" should "run as long as configured duration" in {
     val duration: FiniteDuration = 1.hour
 
-    val loadFinished = LoadRunner(backend).start(() => "some message", duration, throughput = 100)(mat)
+    val loadFinished = LoadGenerator(backend).generate(() => "some message", duration, throughput = 100)(mat).unsafeToFuture()
 
     loadFinished.isCompleted shouldBe false
     manualTime.timePasses(1.hour)
