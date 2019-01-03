@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.effect.IO
 import io.woodenmill.penstock.testutils.{Ports, Spec}
-import io.woodenmill.penstock.{LoadRunner, Metrics}
+import io.woodenmill.penstock.{LoadGenerator, Metrics}
 import net.manub.embeddedkafka.{EmbeddedKafka, EmbeddedKafkaConfig}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -48,11 +48,9 @@ class KafkaBackendSpec extends Spec with EmbeddedKafka with BeforeAndAfterAll {
   it should "integrate with Load Runner" in {
     val message = new ProducerRecord[Array[Byte], Array[Byte]](topic, "from-runner".getBytes)
 
-    val runnerFinished = LoadRunner(kafkaBackend).start(() => message, 1.milli, 1)(mat)
+    LoadGenerator(kafkaBackend).generate(() => message, 1.milli, 1)(mat).unsafeRunSync()
 
-    whenReady(runnerFinished) { _ =>
-      consumeFirstStringMessageFrom(topic) shouldBe "from-runner"
-    }
+    consumeFirstStringMessageFrom(topic) shouldBe "from-runner"
   }
 
   it should "expose basic Kafka Producer metrics" in withNewKafkaBackend(bootstrapServer){ backend =>
