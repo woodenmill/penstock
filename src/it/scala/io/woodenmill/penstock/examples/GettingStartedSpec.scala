@@ -9,6 +9,7 @@ import cats.effect.IO
 import io.woodenmill.penstock.LoadGenerator
 import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.backends.kafka._
+import io.woodenmill.penstock.dsl.Penstock
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric._
 import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusConfig, PrometheusMetric}
 import io.woodenmill.penstock.report.ConsoleReport
@@ -24,6 +25,7 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
   implicit val system: ActorSystem = ActorSystem("Getting-Started")
   implicit val mat: ActorMaterializer = ActorMaterializer()
   implicit val ec: ExecutionContext = system.dispatcher
+
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout = 5.minutes)
 
   val kafkaBackend: KafkaBackend = KafkaBackend(bootstrapServers = "localhost:9092")
@@ -40,21 +42,15 @@ class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
     //given
     val messageGen = () => List(createProducerRecord(topic, s"test message, ID: ${UUID.randomUUID()}"))
 
-    val kafkaMessageInRate: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
-    val recordErrorTotal: IO[Counter] = kafkaBackend.metrics.recordErrorTotal
-    val recordSendTotal: IO[Counter] = kafkaBackend.metrics.recordSendTotal
-    val recordSendRate: IO[Gauge] = kafkaBackend.metrics.recordSendRate
-    val report = ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal)
-
-    //when
-    val finished = kafkaLoadGenerator.generate(messageGen, duration = 2.minutes, throughput = 200).unsafeToFuture()
-    report.runEvery(10.seconds)
+    val kafkaMessageInRateIO: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
+    val recordErrorTotalIO: IO[Counter] = kafkaBackend.metrics.recordErrorTotal
+    val recordSendTotalIO: IO[Counter] = kafkaBackend.metrics.recordSendTotal
+    val recordSendRateIO: IO[Gauge] = kafkaBackend.metrics.recordSendRate
+    val report = ConsoleReport(kafkaMessageInRateIO, recordSendRateIO, recordSendTotalIO, recordErrorTotalIO)
 
     //then
-    whenReady(finished) { _ =>
-      recordErrorTotal.unsafeRunSync().value shouldBe 0
-      recordSendTotal.unsafeRunSync().value shouldBe (24000L +- 1000L)
-      kafkaMessageInRate.unsafeRunSync().value shouldBe 200.0 +- 20.0
-    }
+    Penstock
+      .load(kafkaBackend, messageGen, duration = 2.minutes, throughput = 200)
+      .run()
   }
 }
