@@ -1,10 +1,12 @@
 package io.woodenmill.penstock.dsl
 
 import akka.stream.ActorMaterializer
+import cats.Parallel
 import cats.effect.IO
-import io.woodenmill.penstock.LoadGenerator
+import io.woodenmill.penstock.{LoadGenerator, Metric}
 import io.woodenmill.penstock.backends.StreamingBackend
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
 object Penstock {
@@ -21,11 +23,26 @@ case class Penstock[T](
                         backend: StreamingBackend[T],
                         messageGenerator: () => List[T],
                         duration: FiniteDuration,
-                        throughput: Int
+                        throughput: Int,
+                        assertions: List[IO[Any]] = List()
                       ) {
 
   def run()(implicit mat: ActorMaterializer): Unit = {
-    val load: IO[Unit] = LoadGenerator(backend).generate(messageGenerator, duration, throughput)
-    load.unsafeRunSync()
+    import cats.effect.{ContextShift, IO}
+    import cats.implicits._
+    implicit val ec: ExecutionContext = mat.system.dispatcher
+    implicit val cs: ContextShift[IO] = IO.contextShift(ec)
+
+    val scenario = for {
+      _ <- LoadGenerator(backend).generate(messageGenerator, duration, throughput)
+      _ <- Parallel.parSequence(assertions)
+    } yield ()
+
+    scenario.unsafeRunSync()
+  }
+
+  def metricAssertion[V](metric: IO[Metric[V]])(f: V => Any): Penstock[T] = {
+    val assertion = metric.map(m => f(m.value))
+    this.copy(assertions = assertion :: assertions)
   }
 }
