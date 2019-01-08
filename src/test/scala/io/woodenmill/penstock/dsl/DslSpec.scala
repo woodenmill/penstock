@@ -4,10 +4,9 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.effect.IO
 import io.woodenmill.penstock.Metrics.Counter
+import io.woodenmill.penstock.dsl.Penstock.PenstockFailedAssertion
 import io.woodenmill.penstock.testutils.Spec
 import io.woodenmill.penstock.testutils.TestBackends.mockedBackend
-import org.scalatest.exceptions.TestFailedException
-
 import scala.concurrent.duration._
 
 class DslSpec extends Spec {
@@ -36,7 +35,7 @@ class DslSpec extends Spec {
   }
 
   it should "fail if assertion fails" in {
-    assertThrows[TestFailedException] {
+    assertThrows[PenstockFailedAssertion] {
       aPenstock
         .metricAssertion(always10)(_ shouldBe -1)
         .run()
@@ -55,20 +54,27 @@ class DslSpec extends Spec {
       .metricAssertion(always10)(_ shouldBe 10)
       .metricAssertion(always10)(_ shouldBe -1)
 
-    assertThrows[TestFailedException] {
+    assertThrows[PenstockFailedAssertion] {
       scenario.run()
     }
   }
 
   it should "return information about all failed assertions" in {
-    pending
+    val scenario = aPenstock
+      .metricAssertion(always10){_ shouldBe -2}
+      .metricAssertion(always10)(_ shouldBe -1)
+
+    the [PenstockFailedAssertion] thrownBy {
+      scenario.run()
+    } should have message "10 was not equal to -1, 10 was not equal to -2"
+
   }
 
   it should "print report with all metrics provided for assertions" in {
     pending
   }
 
-  it should "not expose any objects/classes from third part libraries (akka, cats etc.)" in {
+  it should "not expose any objects/classes from third party libraries (akka, cats etc.)" in {
     pending
   }
 
@@ -76,7 +82,7 @@ class DslSpec extends Spec {
     pending
   }
 
-  it should "stop printing report if LoadGenerator failed" in {
+  it should "stop printing report when LoadGenerator failed" in {
     pending
   }
 
