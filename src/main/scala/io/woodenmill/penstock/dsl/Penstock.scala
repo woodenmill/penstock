@@ -1,5 +1,6 @@
 package io.woodenmill.penstock.dsl
 
+import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.effect.{ContextShift, IO}
 import cats.implicits._
@@ -28,9 +29,10 @@ case class Penstock[T](
                         throughput: Int,
                         assertions: List[IO[Any]] = List()
                       ) {
-
-  def run()(implicit mat: ActorMaterializer): Unit = {
-    implicit val cs: ContextShift[IO] = IO.contextShift(mat.system.dispatcher)
+  def run(): Unit = {
+    val system: ActorSystem = ActorSystem()
+    implicit val mat: ActorMaterializer = ActorMaterializer()(system)
+    implicit val cs: ContextShift[IO] = IO.contextShift(system.dispatcher)
 
     val assertionsIO = assertions
       .map(_.attempt)

@@ -1,17 +1,14 @@
 package io.woodenmill.penstock.dsl
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import cats.effect.IO
 import io.woodenmill.penstock.Metrics.Counter
 import io.woodenmill.penstock.dsl.Penstock.PenstockFailedAssertion
 import io.woodenmill.penstock.testutils.Spec
 import io.woodenmill.penstock.testutils.TestBackends.mockedBackend
+
 import scala.concurrent.duration._
 
 class DslSpec extends Spec {
-
-  implicit val mat: ActorMaterializer = ActorMaterializer()(ActorSystem("DslSpec"))
   val backend = mockedBackend[String]()
 
   "Penstock DSL" should "allow to send messages with given throughput" in {
