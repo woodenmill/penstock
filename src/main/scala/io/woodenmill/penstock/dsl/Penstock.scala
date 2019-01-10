@@ -22,13 +22,13 @@ object Penstock {
 
 }
 
-case class Penstock[T](
-                        backend: StreamingBackend[T],
-                        messageGenerator: () => List[T],
-                        duration: FiniteDuration,
-                        throughput: Int,
-                        assertions: List[IO[Any]] = List()
-                      ) {
+class Penstock[T] private(
+                           backend: StreamingBackend[T],
+                           messageGenerator: () => List[T],
+                           duration: FiniteDuration,
+                           throughput: Int,
+                           assertions: List[IO[Any]] = List()
+                         ) {
   def run(): Unit = {
     val system: ActorSystem = ActorSystem()
     implicit val mat: ActorMaterializer = ActorMaterializer()(system)
@@ -54,5 +54,13 @@ case class Penstock[T](
   def metricAssertion[V](metric: IO[Metric[V]])(f: V => Any): Penstock[T] = {
     val assertion = metric.map(m => f(m.value))
     this.copy(assertions = assertion :: assertions)
+  }
+
+  private def copy(backend: StreamingBackend[T] = this.backend,
+                   messageGenerator: () => List[T] = this.messageGenerator,
+                   duration: FiniteDuration = this.duration,
+                   throughput: Int = this.throughput,
+                   assertions: List[IO[Any]] = this.assertions): Penstock[T] = {
+    new Penstock[T](backend, messageGenerator, duration, throughput, assertions)
   }
 }
