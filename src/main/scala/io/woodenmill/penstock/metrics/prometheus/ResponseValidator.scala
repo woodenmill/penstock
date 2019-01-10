@@ -22,12 +22,11 @@ object ResponseValidator {
   }
 
   def validateToRawMetric(promResponse: PromResponse, metricName: String): Either[Throwable, RawMetric] = {
-    val a: Either[DomainValidation, RawMetric] = for {
+    for {
       validMetricName <- validateMetricName(metricName)
       nonEmptyPromData <- validatePromDataNonEmpty(promResponse.data)
       validatedPromData <- validatePromDataHadOneResult(nonEmptyPromData)
     } yield RawMetric(validMetricName, validatedPromData.metricValue)
-    a
   }
 
   private def validateMetricName(name: String): Either[EmptyMetricName.type, String] = {
