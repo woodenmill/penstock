@@ -2,7 +2,7 @@ package io.woodenmill.penstock.dsl
 
 import cats.effect.IO
 import io.woodenmill.penstock.Metrics.Counter
-import io.woodenmill.penstock.dsl.Penstock.PenstockFailedAssertion
+import io.woodenmill.penstock.dsl.Penstock.FailedAssertion
 import io.woodenmill.penstock.testutils.Spec
 import io.woodenmill.penstock.testutils.TestBackends.mockedBackend
 
@@ -32,7 +32,7 @@ class DslSpec extends Spec {
   }
 
   it should "fail if assertion fails" in {
-    assertThrows[PenstockFailedAssertion] {
+    assertThrows[FailedAssertion] {
       aPenstock
         .metricAssertion(always10)(_ shouldBe -1)
         .run()
@@ -51,20 +51,28 @@ class DslSpec extends Spec {
       .metricAssertion(always10)(_ shouldBe 10)
       .metricAssertion(always10)(_ shouldBe -1)
 
-    assertThrows[PenstockFailedAssertion] {
+    assertThrows[FailedAssertion] {
       scenario.run()
     }
   }
 
   it should "return information about all failed assertions" in {
     val scenario = aPenstock
-      .metricAssertion(always10){_ shouldBe -2}
+      .metricAssertion(always10)(_ shouldBe -2)
       .metricAssertion(always10)(_ shouldBe -1)
 
-    the [PenstockFailedAssertion] thrownBy {
-      scenario.run()
-    } should have message "10 was not equal to -1, 10 was not equal to -2"
+    val error = the [FailedAssertion] thrownBy scenario.run()
 
+    error.getMessage should include("10 was not equal to -1")
+    error.getMessage should include("10 was not equal to -2")
+  }
+
+  it should "provide a metric name when assertion fails" in {
+    val qualityMetric = IO(Counter(1, "quality"))
+
+    val error = the[FailedAssertion] thrownBy aPenstock.metricAssertion(qualityMetric)(_ shouldBe 100).run()
+
+    error.getMessage should include("quality")
   }
 
   it should "print report with all metrics provided for assertions" in {
