@@ -41,26 +41,13 @@ Then add following dependency:
 ## Example load test
 [GettingStartedSpec](./src/it/scala/io/woodenmill/penstock/examples/GettingStartedSpec.scala)
 ```scala
-"GettingStarted example" should "send messages to Kafka and use custom Prometheus metric to verify behaviour" in {
-    //given
-    val messageGen = () => List(createProducerRecord(topic, s"test message, ID: ${UUID.randomUUID()}"))
-
-    val kafkaMessageInRate: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
-    val recordErrorTotal: IO[Counter] = kafkaBackend.metrics().recordErrorTotal
-    val recordSendTotal: IO[Counter] = kafkaBackend.metrics().recordSendTotal
-    val recordSendRate: IO[Gauge] = kafkaBackend.metrics().recordSendRate
-    val report = ConsoleReport(kafkaMessageInRate, recordSendRate, recordSendTotal, recordErrorTotal)
-
-    //when
-    val loadFinished = kafkaLoadRunner.start(messageGen, duration = 2.minutes, throughput = 200)
-    report.runEvery(10.seconds)
-
-    //then
-    whenReady(loadFinished) { _ =>
-      recordErrorTotal.unsafeRunSync().value shouldBe 0
-      recordSendTotal.unsafeRunSync().value shouldBe (24000L +- 1000L)
-      kafkaMessageInRate.unsafeRunSync().value shouldBe 200.0 +- 20.0
-    }
+  "GettingStarted example" should "send messages to Kafka and use custom Prometheus metric to verify behaviour" in {
+    Penstock
+      .load(kafkaBackend, messageGen, duration = 2.minutes, throughput = 200)
+      .metricAssertion(recordErrorTotalIO)(_ shouldBe 0)
+      .metricAssertion(recordSendTotalIO)(_ shouldBe (24000L +- 1000L))
+      .metricAssertion(kafkaMessageInRateIO)(_ shouldBe 200.0 +- 20.0)
+      .run()
   }
 ```
 
