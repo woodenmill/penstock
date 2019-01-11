@@ -31,17 +31,17 @@ libraryDependencies += "net.manub" %% "scalatest-embedded-kafka" % "1.1.1" % Tes
 libraryDependencies += "com.github.tomakehurst" % "wiremock" % "2.18.0" % Test
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3" % Test
 
-//scalacOptions ++= Seq(
-//  "-deprecation",
-//  "-explaintypes",
-//  "-Xfatal-warnings",
-//  "-Xlint:private-shadow",
-//  "-Ywarn-dead-code",
-//  "-Ywarn-infer-any",
-//  "-Ywarn-unused:imports",
-//  "-Ywarn-unused:implicits",
-//  "-Ywarn-unused:params"
-//)
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-explaintypes",
+  "-Xfatal-warnings",
+  "-Xlint:private-shadow",
+  "-Ywarn-dead-code",
+  "-Ywarn-infer-any",
+  "-Ywarn-unused:imports",
+  "-Ywarn-unused:implicits",
+  "-Ywarn-unused:params"
+)
 
 logBuffered in Test := false
 parallelExecution in Test := false
