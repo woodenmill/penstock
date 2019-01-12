@@ -2,14 +2,17 @@ package io.woodenmill.penstock.dsl
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import cats.effect.{ContextShift, IO}
+import cats.data.NonEmptyList
+import cats.effect.{ContextShift, IO, Timer}
 import cats.implicits._
 import io.woodenmill.penstock.Metrics.MetricName
 import io.woodenmill.penstock.backends.StreamingBackend
 import io.woodenmill.penstock.dsl.Penstock.FailedAssertion
+import io.woodenmill.penstock.report.AsciiReport
+import io.woodenmill.penstock.util.IOOps._
 import io.woodenmill.penstock.{LoadGenerator, Metric}
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{FiniteDuration, _}
 import scala.util.{Failure, Try}
 
 object Penstock {
@@ -30,23 +33,34 @@ class Penstock[T] private(
                            messageGenerator: () => List[T],
                            duration: FiniteDuration,
                            throughput: Int,
-                           assertions: List[IO[(MetricName, Try[Unit])]] = List()
+                           assertions: List[IO[(MetricName, Try[Unit])]] = List(),
+                           reportMetrics: List[IO[Metric[_]]] = List()
                          ) {
   def run(): Unit = {
-    val system: ActorSystem = ActorSystem()
+    implicit val system: ActorSystem = ActorSystem()
     implicit val mat: ActorMaterializer = ActorMaterializer()(system)
     implicit val cs: ContextShift[IO] = IO.contextShift(system.dispatcher)
+    implicit val timer: Timer[IO] = IO.timer(system.dispatcher)
 
-    LoadGenerator(backend).generate(messageGenerator, duration, throughput)
+    val printReportEndlessly: IO[Unit] = reportMetrics match {
+      case Nil => IO.never
+      case head :: tail =>
+        AsciiReport
+          .apply(NonEmptyList(head, tail))
+          .map(println(_))
+          .repeatEndlessly(10.seconds)
+    }
+
+    val scenario: IO[Unit] = LoadGenerator(backend).generate(messageGenerator, duration, throughput)
       .flatMap(_ => collectFailed(assertions))
       .flatMap(raiseErrorIfAnyFailed)
-      .unsafeRunSync()
+
+    IO.race(scenario, printReportEndlessly).unsafeRunSync()
   }
 
   def metricAssertion[V](metric: IO[Metric[V]])(assertion: V => Any): Penstock[T] = {
-
     val newAssertion: IO[(MetricName, Try[Unit])] = metric.map(m => (m.name, Try(assertion(m.value))))
-    this.copy(assertions = newAssertion :: assertions)
+    this.copy(assertions = newAssertion :: assertions, reportMetrics = metric :: reportMetrics)
   }
 
   private def collectFailed(assertions: List[IO[(MetricName, Try[Unit])]])(implicit cs: ContextShift[IO]): IO[List[Throwable]] = {
@@ -70,7 +84,8 @@ class Penstock[T] private(
                    messageGenerator: () => List[T] = this.messageGenerator,
                    duration: FiniteDuration = this.duration,
                    throughput: Int = this.throughput,
-                   assertions: List[IO[(MetricName, Try[Unit])]] = this.assertions): Penstock[T] = {
-    new Penstock[T](backend, messageGenerator, duration, throughput, assertions)
+                   assertions: List[IO[(MetricName, Try[Unit])]] = this.assertions,
+                   reportMetrics: List[IO[Metric[_]]]): Penstock[T] = {
+    new Penstock[T](backend, messageGenerator, duration, throughput, assertions, reportMetrics)
   }
 }

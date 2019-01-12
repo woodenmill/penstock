@@ -79,7 +79,7 @@ class DslSpec extends Spec {
     pending
   }
 
-  it should "not expose any objects/classes from third party libraries (akka, cats etc.)" in {
+  it should "print nothing if no assertion was provided" in {
     pending
   }
 
