@@ -1,6 +1,5 @@
 package io.woodenmill.penstock.testutils
 
-import cats.effect.laws.util.TestContext
 import cats.effect.{ContextShift, IO, Timer}
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
@@ -14,9 +13,4 @@ trait Spec extends FlatSpec with Matchers with ScalaFutures with Eventually with
 
   implicit val contextShift: ContextShift[IO] = IO.contextShift(global)
   implicit val timer: Timer[IO] = IO.timer(global)
-
-  def testContext(f: TestContext => Any) = {
-    implicit val tc: TestContext = TestContext()
-    f(tc)
-  }
 }

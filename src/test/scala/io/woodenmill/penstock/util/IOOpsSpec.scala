@@ -1,8 +1,10 @@
 package io.woodenmill.penstock.util
 
 import cats.effect.IO
+import cats.effect.laws.util.TestContext
 import io.woodenmill.penstock.testutils.Spec
 import io.woodenmill.penstock.util.IOOps._
+
 import scala.concurrent.duration._
 
 class IOOpsSpec extends Spec {
@@ -17,7 +19,8 @@ class IOOpsSpec extends Spec {
     eventually(counter should be > 1000)
   }
 
-  it should "repeat execution in given intervals" in testContext { tc =>
+  it should "repeat execution in given intervals" in {
+    val tc = TestContext()
     var counter = 0
     val increase = IO{ counter = counter + 1 }
 
