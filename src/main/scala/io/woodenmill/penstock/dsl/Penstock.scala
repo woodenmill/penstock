@@ -12,6 +12,7 @@ import io.woodenmill.penstock.report.AsciiReport
 import io.woodenmill.penstock.util.IOOps._
 import io.woodenmill.penstock.{LoadGenerator, Metric}
 
+import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.util.{Failure, Try}
 
@@ -45,8 +46,7 @@ class Penstock[T] private(
     val printReportEndlessly: IO[Unit] = reportMetrics match {
       case Nil => IO.never
       case head :: tail =>
-        AsciiReport
-          .apply(NonEmptyList(head, tail))
+        AsciiReport(NonEmptyList(head, tail))
           .map(println(_))
           .repeatEndlessly(10.seconds)
     }
@@ -55,7 +55,12 @@ class Penstock[T] private(
       .flatMap(_ => collectFailed(assertions))
       .flatMap(raiseErrorIfAnyFailed)
 
-    IO.race(scenario, printReportEndlessly).unsafeRunSync()
+    try {
+      IO.race(scenario, printReportEndlessly).unsafeRunSync()
+    } finally {
+      mat.shutdown()
+      Await.ready(system.terminate(), atMost = 5.seconds)
+    }
   }
 
   def metricAssertion[V](metric: IO[Metric[V]])(assertion: V => Any): Penstock[T] = {

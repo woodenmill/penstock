@@ -9,7 +9,9 @@ import io.woodenmill.penstock.testutils.TestBackends.mockedBackend
 import scala.concurrent.duration._
 
 class DslSpec extends Spec {
+  val always10 = IO(Counter(10, "always ten"))
   val backend = mockedBackend[String]()
+  val aPenstock = Penstock.load(backend, () => "msg", duration = 1.second, throughput = 1)
 
   "Penstock DSL" should "allow to send messages with given throughput" in {
     val throughput: Int = 1500
@@ -61,7 +63,7 @@ class DslSpec extends Spec {
       .metricAssertion(always10)(_ shouldBe -2)
       .metricAssertion(always10)(_ shouldBe -1)
 
-    val error = the [FailedAssertion] thrownBy scenario.run()
+    val error = the[FailedAssertion] thrownBy scenario.run()
 
     error.getMessage should include("10 was not equal to -1")
     error.getMessage should include("10 was not equal to -2")
@@ -76,22 +78,30 @@ class DslSpec extends Spec {
   }
 
   it should "print report with all metrics provided for assertions" in {
-    pending
+    val metric111 = IO(Counter(111, "always one one one"))
+    val metric222 = IO(Counter(222, "always two two two"))
+
+    val output = catchConsoleOutput {
+      Penstock
+        .load(backend, () => "msg", duration = 100.millis, throughput = 1)
+        .metricAssertion(metric111)(_ shouldBe 111)
+        .metricAssertion(metric222)(_ shouldBe 222)
+        .run()
+    }
+
+    output should include("always one one one")
+    output should include("111")
+    output should include("always two two two")
+    output should include("222")
   }
 
   it should "print nothing if no assertion was provided" in {
-    pending
+    val output = catchConsoleOutput {
+      Penstock
+        .load(backend, () => "msg", duration = 100.millis, throughput = 1)
+        .run()
+    }
+
+    output shouldBe empty
   }
-
-  it should "clean up after scenario" in {
-    pending
-  }
-
-  it should "stop printing report when LoadGenerator failed" in {
-    pending
-  }
-
-  val aPenstock = Penstock.load(backend, () => "msg", duration = 1.second, throughput = 1)
-
-  val always10 = IO(Counter(10, "always ten"))
 }
