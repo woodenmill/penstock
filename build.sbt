@@ -1,5 +1,5 @@
 name := "penstock"
-version := "0.0.5"
+version := "0.0.6"
 organization := "io.woodenmill"
 bintrayOrganization := Some("woodenmill")
 bintrayRepository := "oss-maven"

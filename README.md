@@ -36,7 +36,7 @@ resolvers += Resolver.bintrayRepo("woodenmill", "oss-maven")
 
 Then add the dependency:
 ```
-"io.woodenmill" %% "penstock" % "0.0.4"
+"io.woodenmill" %% "penstock" % "0.0.6"
 ```
 ## Example load test
 [GettingStartedSpec](./src/it/scala/io/woodenmill/penstock/examples/GettingStartedSpec.scala)
