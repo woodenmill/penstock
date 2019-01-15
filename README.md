@@ -29,12 +29,12 @@ XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ## Quickstart with sbt
 
-Add following Bintray repository:
+Add Woodenmill's Bintray repository:
 ```
-Resolver.bintrayRepo("woodenmill", "oss-maven")
+resolvers += Resolver.bintrayRepo("woodenmill", "oss-maven")
 ```
 
-Then add following dependency:
+Then add the dependency:
 ```
 "io.woodenmill" %% "penstock" % "0.0.4"
 ```
