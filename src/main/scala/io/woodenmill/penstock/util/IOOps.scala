@@ -1,6 +1,7 @@
 package io.woodenmill.penstock.util
 
 import cats.effect.{ContextShift, IO, Timer}
+import cats.implicits._
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -18,5 +19,15 @@ object IOOps {
     }
   }
 
-  val printIO: String => IO[Unit] = term => IO { println(term) }
+  val printIO: String => IO[Unit] = term => IO {
+    println(term)
+  }
+
+
+  def parallelAttempt[T](ios: List[IO[T]])(implicit cs: ContextShift[IO]): IO[(List[Throwable], List[T])] = {
+    ios
+      .map(io => io.attempt)
+      .parSequence
+      .map(errorsAndSuccesses => errorsAndSuccesses.separate)
+  }
 }

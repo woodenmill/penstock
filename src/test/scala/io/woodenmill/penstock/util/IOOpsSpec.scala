@@ -44,4 +44,17 @@ class IOOpsSpec extends Spec {
     noException should be thrownBy program.unsafeRunSync()
   }
 
+  "parallelAttempt" should "return list of errors and list of values" in {
+    val ex = new RuntimeException()
+    val input = List(IO(1), IO(2), IO(3), IO.raiseError(ex))
+
+    val output = IOOps.parallelAttempt[Int](input).unsafeRunSync()
+
+    output shouldBe (List(ex), List(1,2,3))
+  }
+
+  it should "handle empty input list" in {
+    IOOps.parallelAttempt[String](List()).unsafeRunSync() shouldBe (List(), List())
+  }
+
 }
