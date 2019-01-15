@@ -3,18 +3,18 @@ package io.woodenmill.penstock.dsl
 import cats.effect.IO
 import io.woodenmill.penstock.Metrics.Counter
 import io.woodenmill.penstock.dsl.Penstock.FailedAssertion
-import io.woodenmill.penstock.testutils.Spec
+import io.woodenmill.penstock.testutils.{Spec, TestBackends}
 import io.woodenmill.penstock.testutils.TestBackends.mockedBackend
 
 import scala.concurrent.duration._
 
 class DslSpec extends Spec {
   val always10 = IO(Counter(10, "always ten"))
-  val backend = mockedBackend[String]()
-  val aPenstock = Penstock.load(backend, () => "msg", duration = 1.second, throughput = 1)
+  val aPenstock = Penstock.load(TestBackends.doNothing[String](), () => "msg", duration = 1.second, throughput = 1)
 
   "Penstock DSL" should "allow to send messages with given throughput" in {
     val throughput: Int = 1500
+    val backend = mockedBackend[String]()
 
     Penstock.load(backend, () => List("msg"), duration = 2.seconds, throughput).run()
 
@@ -24,10 +24,10 @@ class DslSpec extends Spec {
   it should "accept a message generator that generates one message at a time" in {
     val singleMessageGen = () => "some message"
 
-    "Penstock.load(backend, singleMessageGen, 1.second, 100)" should compile
+    "Penstock.load(TestBackends.doNothing[String](), singleMessageGen, 1.second, 100)" should compile
   }
 
-  it should "allow to specify assertion that should be verified when load finished" in {
+  it should "allow to specify assertion" in {
     aPenstock
       .metricAssertion(always10)(_ shouldBe 10)
       .run()
@@ -69,6 +69,16 @@ class DslSpec extends Spec {
     error.getMessage should include("10 was not equal to -2")
   }
 
+  it should "check assertions when load finished" in {
+    val backend = mockedBackend[String]()
+    val totalMessagesMetric = IO(Counter(backend.messages.size, "Total messages sent"))
+
+    Penstock
+      .load(backend, () => "msg", duration = 1.second, throughput = 10)
+      .metricAssertion(totalMessagesMetric)(_ shouldBe 10)
+      .run()
+  }
+
   it should "provide a metric name when assertion fails" in {
     val qualityMetric = IO(Counter(1, "quality"))
 
@@ -83,7 +93,7 @@ class DslSpec extends Spec {
 
     val output = catchConsoleOutput {
       Penstock
-        .load(backend, () => "msg", duration = 100.millis, throughput = 1)
+        .load(TestBackends.doNothing[String](), () => "msg", duration = 100.millis, throughput = 1)
         .metricAssertion(metric111)(_ shouldBe 111)
         .metricAssertion(metric222)(_ shouldBe 222)
         .run()
@@ -98,7 +108,7 @@ class DslSpec extends Spec {
   it should "print nothing if no assertion was provided" in {
     val output = catchConsoleOutput {
       Penstock
-        .load(backend, () => "msg", duration = 100.millis, throughput = 1)
+        .load(TestBackends.doNothing[String](), () => "msg", duration = 100.millis, throughput = 1)
         .run()
     }
 
