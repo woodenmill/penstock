@@ -2,7 +2,7 @@ package io.woodenmill.penstock.metrics.prometheus
 
 import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.{PromData, PromResponse, PromResult}
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric.RawMetric
-
+//Looks good
 object ResponseValidator {
 
   sealed trait DomainValidation extends Exception {

@@ -9,7 +9,7 @@ import upickle.default._
 
 import scala.util.{Failure, Success, Try}
 
-//TODO: close backend
+//TODO: close backend or make it a cats.Resource
 //TODO: are all cases covered in that flatmap?
 
 object PrometheusClient {
