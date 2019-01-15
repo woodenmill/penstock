@@ -10,12 +10,11 @@ import io.woodenmill.penstock.dsl.Penstock
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric._
 import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusConfig, PrometheusMetric}
 import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.duration._
 
-class GettingStartedSpec extends FlatSpec with Matchers with ScalaFutures {
+class GettingStartedSpec extends FlatSpec with Matchers {
 
   val kafkaBackend: KafkaBackend = KafkaBackend(bootstrapServers = "localhost:9092")
   implicit val stringSerializer: Serializer[String] = new StringSerializer()
