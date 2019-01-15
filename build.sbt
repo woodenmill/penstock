@@ -30,6 +30,7 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
 libraryDependencies += "net.manub" %% "scalatest-embedded-kafka" % "1.1.1" % Test
 libraryDependencies += "com.github.tomakehurst" % "wiremock" % "2.18.0" % Test
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3" % Test
+libraryDependencies += "org.typelevel" %% "cats-effect-laws" % "1.1.0" % Test
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -40,7 +41,8 @@ scalacOptions ++= Seq(
   "-Ywarn-infer-any",
   "-Ywarn-unused:imports",
   "-Ywarn-unused:implicits",
-  "-Ywarn-unused:params"
+  "-Ywarn-unused:params",
+  "-Ypartial-unification"
 )
 
 logBuffered in Test := false
