@@ -17,4 +17,6 @@ object IOOps {
       } yield ()
     }
   }
+
+  val printIO: String => IO[Unit] = term => IO { println(term) }
 }

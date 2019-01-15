@@ -47,7 +47,7 @@ class Penstock[T] private(
       case Nil => IO.never
       case head :: tail =>
         AsciiReport(NonEmptyList(head, tail))
-          .map(println(_))
+          .flatMap(printIO)
           .repeatEndlessly(10.seconds)
     }
 
