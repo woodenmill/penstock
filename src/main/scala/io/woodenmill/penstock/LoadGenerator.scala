@@ -10,6 +10,8 @@ import io.woodenmill.penstock.backends.StreamingBackend
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
+
+//Looks good
 case class LoadGenerator[T](backend: StreamingBackend[T]) {
 
   def generate(toSend: () => T, duration: FiniteDuration, throughput: Int)(implicit mat: ActorMaterializer): IO[Unit] = {

@@ -4,7 +4,7 @@ import de.vandermeer.asciitable.{AT_Context, AsciiTable}
 import de.vandermeer.asciithemes.u8.U8_Grids
 import io.woodenmill.penstock.Metric
 
-
+//Looks good
 private[report] object AsciiTableFormatter {
 
   def format(metrics: List[Metric[_]]): String = {

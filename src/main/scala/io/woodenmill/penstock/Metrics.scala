@@ -2,7 +2,7 @@ package io.woodenmill.penstock
 
 import io.woodenmill.penstock.Metrics.MetricName
 
-
+//Looks good
 object Metrics {
   type MetricName = String
 

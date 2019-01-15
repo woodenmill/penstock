@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 
 import scala.concurrent.duration.FiniteDuration
 
+//TODO: System.currentTimeMIllis is a side effect!
 object Mesurements {
 
   val Zero = FiniteDuration(0, MILLISECONDS)

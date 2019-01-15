@@ -16,6 +16,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.util.{Failure, Try}
 
+//TODO: actorsystem and mat could be a cats.Resource (auto-closing)
 object Penstock {
   def load[T](backend: StreamingBackend[T], messageGen: () => T, duration: FiniteDuration, throughput: Int): Penstock[T] = {
     new Penstock[T](backend, () => List(messageGen()), duration, throughput)
@@ -56,7 +57,7 @@ class Penstock[T] private(
       .flatMap(raiseErrorIfAnyFailed)
 
     try {
-      IO.race(scenario, printReportEndlessly).unsafeRunSync()
+      IO.race(scenario, printReportEndlessly)
     } finally {
       mat.shutdown()
       Await.ready(system.terminate(), atMost = 5.seconds)
