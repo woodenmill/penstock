@@ -1,6 +1,6 @@
 package io.woodenmill.penstock.examples
 
-import java.net.URI
+import java.net.URL
 import java.util.UUID
 
 import cats.effect.IO
@@ -20,7 +20,7 @@ class GettingStartedSpec extends FlatSpec with Matchers {
   implicit val stringSerializer: Serializer[String] = new StringSerializer()
   val messageGen = () => createProducerRecord("input", s"test message, ID: ${UUID.randomUUID()}")
 
-  implicit val promConfig: PrometheusConfig = PrometheusConfig(new URI("localhost:9090"))
+  implicit val promConfig: PrometheusConfig = PrometheusConfig(new URL("http://localhost:9090"))
   val q = PromQl("""kafka_server_BrokerTopicMetrics_OneMinuteRate{name="MessagesInPerSec",topic="input"}""")
   val kafkaMessageInRateIO: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
   val recordErrorTotalIO: IO[Counter] = kafkaBackend.metrics.recordErrorTotal

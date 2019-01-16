@@ -26,7 +26,7 @@ class PrometheusClientSpec extends Spec with PrometheusIntegratedSpec {
     val metricIO = promClient.fetch("abc", PromQl("up"))
 
     whenReady(metricIO.unsafeToFuture().failed) { ex =>
-      ex should have message "Querying Prometheus has failed. query=up. Response: status=404, body=Not found"
+      ex should have message "Not Found"
     }
   }
 
