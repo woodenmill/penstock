@@ -4,11 +4,11 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.data.NonEmptyList
 import cats.effect.{ContextShift, IO, Timer}
-import cats.implicits._
 import io.woodenmill.penstock.Metrics.MetricName
 import io.woodenmill.penstock.backends.StreamingBackend
 import io.woodenmill.penstock.dsl.Penstock.FailedAssertion
 import io.woodenmill.penstock.report.AsciiReport
+import io.woodenmill.penstock.util.IOOps
 import io.woodenmill.penstock.util.IOOps._
 import io.woodenmill.penstock.{LoadGenerator, Metric}
 
@@ -69,13 +69,11 @@ class Penstock[T] private(
   }
 
   private def collectFailed(assertions: List[IO[(MetricName, Try[Unit])]])(implicit cs: ContextShift[IO]): IO[List[Throwable]] = {
-    assertions
-      .map(_.attempt)
-      .parSequence
-      .map(_.collect {
-        case Left(e) => e
-        case Right((metricName, Failure(e))) => new FailedAssertion(s"$metricName: ${e.getMessage}")
-      })
+    IOOps.parallelAttempt(assertions)
+      .map { case (errors, maybeErrors) =>
+        val failedAssertions = maybeErrors.collect { case (metricName, Failure(e)) => new FailedAssertion(s"$metricName: ${e.getMessage}") }
+        errors ::: failedAssertions
+      }
   }
 
   private def raiseErrorIfAnyFailed(ts: List[Throwable]): IO[Unit] = ts match {
