@@ -27,6 +27,6 @@ class ConsoleReportIntegratedSpec extends Spec with PrometheusIntegratedSpec {
 
     val report = AsciiReport(NonEmptyList.of(metric)).unsafeRunSync()
 
-    report should include("Error: Prometheus Response had no data. Correct your Prometheus query")
+    report should include("Prometheus Response had no data. Correct your Prometheus query")
   }
 }

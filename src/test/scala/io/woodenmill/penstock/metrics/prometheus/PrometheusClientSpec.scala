@@ -37,7 +37,7 @@ class PrometheusClientSpec extends Spec with PrometheusIntegratedSpec {
     val metricIO = promClient("test", PromQl("test"))
 
     whenReady(metricIO.unsafeToFuture().failed) { ex =>
-      ex should have message "Prometheus Response had more than one result. Correct Prometheus query"
+      ex.getMessage should include("Prometheus Response had more than one result. Correct Prometheus query")
     }
   }
 
@@ -57,7 +57,7 @@ class PrometheusClientSpec extends Spec with PrometheusIntegratedSpec {
     val metricIO = promClient("no-data", PromQl("no-data"))
 
     whenReady(metricIO.unsafeToFuture().failed) { ex =>
-      ex should have message "Prometheus Response had no data. Correct your Prometheus query"
+      ex.getMessage should include("Prometheus Response had no data. Correct your Prometheus query")
     }
   }
 }
