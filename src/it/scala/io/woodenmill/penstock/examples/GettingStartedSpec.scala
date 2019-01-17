@@ -7,8 +7,9 @@ import cats.effect.IO
 import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.backends.kafka._
 import io.woodenmill.penstock.dsl.Penstock
+import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.PrometheusConfig
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric._
-import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusConfig, PrometheusMetric}
+import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusMetric}
 import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
 import org.scalatest.{FlatSpec, Matchers}
 

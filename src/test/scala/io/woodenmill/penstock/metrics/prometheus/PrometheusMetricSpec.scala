@@ -4,6 +4,7 @@ import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.testutils.PromResponses.valid
 import io.woodenmill.penstock.testutils.{PrometheusIntegratedSpec, Spec}
 import PrometheusMetric._
+import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.PrometheusConfig
 
 class PrometheusMetricSpec extends Spec with PrometheusIntegratedSpec {
 

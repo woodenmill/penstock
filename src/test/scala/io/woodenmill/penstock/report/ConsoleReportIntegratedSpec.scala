@@ -2,7 +2,9 @@ package io.woodenmill.penstock.report
 
 import cats.data.NonEmptyList
 import io.woodenmill.penstock.Metrics.Counter
-import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusConfig, PrometheusMetric}
+import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.PrometheusConfig
+import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric._
+import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusMetric}
 import io.woodenmill.penstock.testutils.{PromResponses, PrometheusIntegratedSpec, Spec}
 
 class ConsoleReportIntegratedSpec extends Spec with PrometheusIntegratedSpec {

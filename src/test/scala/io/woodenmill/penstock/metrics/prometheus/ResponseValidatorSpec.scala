@@ -1,7 +1,6 @@
 package io.woodenmill.penstock.metrics.prometheus
 
-import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.{PromData, PromResponse, PromResult}
-import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric.RawMetric
+import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.{PromData, PromResponse, PromResult, RawMetric}
 import io.woodenmill.penstock.testutils.Spec
 import org.scalatest.EitherValues
 

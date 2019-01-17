@@ -1,23 +1,22 @@
 package io.woodenmill.penstock.metrics.prometheus
 
-import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.{PromData, PromResponse, PromResult}
-import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric.RawMetric
+import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.{PromData, PromResponse, PromResult, RawMetric}
 
 object ResponseValidator {
 
-  sealed trait DomainValidation extends Exception {
+  sealed trait Violation extends Exception {
     override def getMessage: String
   }
 
-  case object PromDataHadMoreThanOneResult extends DomainValidation {
+  case object PromDataHadMoreThanOneResult extends Violation {
     override def getMessage: String = "Prometheus Response had more than one result. Correct Prometheus query"
   }
 
-  case object PromDataHadNoData extends DomainValidation {
+  case object PromDataHadNoData extends Violation {
     override def getMessage: String = "Prometheus Response had no data. Correct your Prometheus query"
   }
 
-  case object EmptyMetricName extends DomainValidation {
+  case object EmptyMetricName extends Violation {
     override def getMessage: String = "Metric name cannot be empty"
   }
 
