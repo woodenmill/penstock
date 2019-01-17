@@ -20,10 +20,9 @@ val sttpVersion = "1.3.0"
 libraryDependencies += "org.apache.kafka" % "kafka-clients" % "1.1.1" % Provided
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.14"
 libraryDependencies += "org.typelevel" %% "cats-effect" % "1.1.0"
-libraryDependencies += "com.softwaremill.sttp" %% "core" % sttpVersion
-libraryDependencies += "com.softwaremill.sttp" %% "async-http-client-backend-cats" % sttpVersion
 libraryDependencies += "com.lihaoyi" %% "upickle" % "0.7.1"
 libraryDependencies += "de.vandermeer" % "asciitable" % "0.3.2"
+libraryDependencies += "org.apache.httpcomponents" % "fluent-hc" % "4.5.6"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.14" % Test
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test

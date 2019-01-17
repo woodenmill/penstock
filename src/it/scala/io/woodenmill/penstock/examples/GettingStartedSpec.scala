@@ -1,14 +1,15 @@
 package io.woodenmill.penstock.examples
 
-import java.net.URI
+import java.net.URL
 import java.util.UUID
 
 import cats.effect.IO
 import io.woodenmill.penstock.Metrics.{Counter, Gauge}
 import io.woodenmill.penstock.backends.kafka._
 import io.woodenmill.penstock.dsl.Penstock
+import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.PrometheusConfig
 import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric._
-import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusConfig, PrometheusMetric}
+import io.woodenmill.penstock.metrics.prometheus.{PromQl, PrometheusMetric}
 import org.apache.kafka.common.serialization.{Serializer, StringSerializer}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -20,7 +21,7 @@ class GettingStartedSpec extends FlatSpec with Matchers {
   implicit val stringSerializer: Serializer[String] = new StringSerializer()
   val messageGen = () => createProducerRecord("input", s"test message, ID: ${UUID.randomUUID()}")
 
-  implicit val promConfig: PrometheusConfig = PrometheusConfig(new URI("localhost:9090"))
+  implicit val promConfig: PrometheusConfig = PrometheusConfig(new URL("http://localhost:9090"))
   val q = PromQl("""kafka_server_BrokerTopicMetrics_OneMinuteRate{name="MessagesInPerSec",topic="input"}""")
   val kafkaMessageInRateIO: IO[Gauge] = PrometheusMetric[Gauge](metricName = "kafka-messages-in-rate", query = q)
   val recordErrorTotalIO: IO[Counter] = kafkaBackend.metrics.recordErrorTotal

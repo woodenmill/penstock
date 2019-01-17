@@ -1,51 +1,36 @@
 package io.woodenmill.penstock.metrics.prometheus
 
-import cats.effect.IO
-import com.softwaremill.sttp._
-import com.softwaremill.sttp.asynchttpclient.cats.AsyncHttpClientCatsBackend
-import io.woodenmill.penstock.metrics.prometheus.PrometheusClient.{PromResponse, backend}
-import io.woodenmill.penstock.metrics.prometheus.PrometheusMetric.RawMetric
-import upickle.default._
+import java.net.URL
 
-import scala.util.{Failure, Success, Try}
+import cats.effect.IO
+import org.apache.http.client.fluent.{Async, Content, Request}
+import org.apache.http.concurrent.FutureCallback
+
+import scala.concurrent.duration.{FiniteDuration, _}
 
 
 object PrometheusClient {
 
-  case class PromResponse(data: PromData)
+  case class PrometheusConfig(prometheusUrl: URL, connectionTimeout: FiniteDuration = 3.seconds, socketTimeout: FiniteDuration = 1.second)
 
-  case class PromData(result: Seq[PromResult])
+  case class RawMetric(metricName: String, metricValue: Double)
 
-  case class PromResult(value: (Long, Double)) {
-    val metricValue: Double = value._2
-  }
 
-  implicit val backend: SttpBackend[IO, Nothing] = AsyncHttpClientCatsBackend()
-  implicit val promResponseReader: Reader[PromResponse] = macroR
-  implicit val promDataReader: Reader[PromData] = macroR
-  implicit val promResultReader: Reader[PromResult] = macroR
-}
+  def fetch(config: PrometheusConfig)(metricName: String, query: PromQl): IO[RawMetric] = {
 
-case class PrometheusClient(config: PrometheusConfig) {
-  private val promApi = Uri(config.prometheusUrl).path("/api/v1/query")
+    def buildRequest(query: PromQl, config: PrometheusConfig): Request = Request
+      .Get(new URL(s"${config.prometheusUrl}/api/v1/query?query=${query.query}").toURI)
+      .connectTimeout(config.connectionTimeout.toMillis.toInt)
+      .socketTimeout(config.socketTimeout.toMillis.toInt)
 
-  def fetch(metricName: String, query: PromQl): IO[RawMetric] = {
-    def extractRawMetric(json: String): Either[Throwable, RawMetric] = {
-      Try(read[PromResponse](json)) match {
-        case Success(promResponse) => ResponseValidator.validateToRawMetric(promResponse, metricName)
-        case Failure(exception) => Left(new RuntimeException(s"Prometheus response is invalid. Response: $json", exception))
-      }
+    def httpClientCallback(callback: Either[Throwable, RawMetric] => Unit) = new FutureCallback[Content] {
+      override def completed(content: Content): Unit = callback(ResponseValidator.validate(content.asString(), metricName))
+
+      override def failed(ex: Exception): Unit = callback(Left(ex))
+
+      override def cancelled(): Unit = callback(Left(new RuntimeException("Http call to Prometheus has been cancelled")))
     }
 
-    sttp
-      .get(promApi.param("query", query.query))
-      .send()
-      .flatMap {
-        case r@Response(Right(body), _, _, _, _) if r.isSuccess =>
-          IO.fromEither(extractRawMetric(body))
-        case Response(Left(body), code, _, _, _) =>
-          IO.raiseError(new RuntimeException(s"Querying Prometheus has failed. $query. Response: status=$code, body=${new String(body)}"))
-      }
+    IO.async(callback => Async.newInstance().execute(buildRequest(query, config), httpClientCallback(callback)))
   }
-
 }
